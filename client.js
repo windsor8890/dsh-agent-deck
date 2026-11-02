@@ -2229,7 +2229,7 @@ window.__ModuleLoader__.load({
       // state -> reference pose (set by the operator):
       // busy uses the arms-up pose, idle the closed-eye one, error the plain front pose
       if (mode === 'busy') return 'stand'
-      if (mode === 'idle') return 'front'
+      if (mode === 'idle') return 'happy'
       if (mode === 'error') return 'rest'
       return 'front'
     }
