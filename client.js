@@ -4438,6 +4438,7 @@ window.__ModuleLoader__.load({
     function apply(ctx) {
       ctx.effect(() => ctx.locale.register(NS, { zh: DICT.zh, en: DICT.en }), 'watchtower: dictionaries')
       const t = ctx.locale.bind(NS)
+      if (typeof document !== "undefined") ensureGirlSprite()
       const monitor = createMonitor(ctx)
 
       ctx.effect(() => {
