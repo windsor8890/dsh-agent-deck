@@ -15,6 +15,12 @@
 
 面板内右上的 `×` 回到会话。
 
+## 截图（v0.2.0）
+
+![办公室 · CINEMA](docs/preview-agent-deck.png)
+
+![办公室 · 普通窗口](docs/preview-agent-deck-compact.png)
+
 ## 舞台视图
 
 **OFFICE（默认）** —— **浅等距 2.5D**办公场景（行是横向的，纵深朝后上方收；桌面/显示器/椅子/键盘都是
