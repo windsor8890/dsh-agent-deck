@@ -1,3 +1,3 @@
 - insert:
-    - id: watchtower
+    - id: agent-deck
       name: 'dsh-agent-deck'

@@ -12,7 +12,7 @@
  */
 
 window.__ModuleLoader__.load({
-  id: '@local/watchtower',
+  id: 'dsh-agent-deck',
   factory(require) {
     const React = require('react')
     const { useRef, useEffect, useState } = React
