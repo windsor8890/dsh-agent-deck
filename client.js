@@ -2117,18 +2117,31 @@ window.__ModuleLoader__.load({
         return null
       }
     }
+    const girlLoadingPoses = new Set()
     function ensureGirlSprites() {
-      if (girlSpritesLoading || Object.keys(girlPoseData).length === 4) return
-      girlSpritesLoading = true
+      // retry any pose that is not decoded yet; each pose is loaded at most once
+      // at a time so a missing image never blocks the others forever
       for (const pose of Object.keys(GIRL_SPRITE_SRC)) {
+        if (girlPoseData[pose] || girlLoadingPoses.has(pose)) continue
+        girlLoadingPoses.add(pose)
+        const finish = () => {
+          girlLoadingPoses.delete(pose)
+        }
         try {
           const img = new Image()
           img.onload = function () {
-            const data = keyGirlPose(img)
-            if (data) girlPoseData[pose] = data
+            try {
+              const data = keyGirlPose(img)
+              if (data) girlPoseData[pose] = data
+            } catch (err) {
+              // ignore a broken decode; the pose stays missing
+            }
+            finish()
           }
+          img.onerror = finish
           img.src = GIRL_SPRITE_SRC[pose]
         } catch (err) {
+          finish()
           return
         }
       }
@@ -2182,15 +2195,19 @@ window.__ModuleLoader__.load({
       return rgbToHsl(parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16))[0]
     }
     function girlPoseFor(mode) {
-      if (mode === 'busy') return 'side'
+      // state -> reference pose (set by the operator):
+      // busy uses the arms-up pose, idle the closed-eye one, error the plain front pose
+      if (mode === 'busy') return 'stand'
       if (mode === 'idle') return 'happy'
-      if (mode === 'error') return 'stand'
+      if (mode === 'error') return 'front'
       return 'front'
     }
     function girlSpriteFor(mode, color) {
       ensureGirlSprites()
       const pose = girlPoseFor(mode)
-      const base = girlPoseData[pose] || girlPoseData.front
+      // never substitute another pose: a wrong pose must not be cached, so a frame
+      // that renders before the image decodes falls back to the procedural art
+      const base = girlPoseData[pose]
       if (!base) return null
       const targetHue = girlHue(color)
       const key = pose + '|' + Math.round(targetHue)
