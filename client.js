@@ -21,7 +21,7 @@ window.__ModuleLoader__.load({
     //#region constants
     const NS = 'watchtower'
     const PANEL_ID = 'watchtower'
-    const MAX_CARDS = 6
+    const MAX_CARDS = 8
     // an agent that stops running keeps its desk for a while, so idle sessions
     // stay visible in the office instead of disappearing the moment they pause
     const IDLE_HOLD_MS = 180000
@@ -3185,14 +3185,14 @@ window.__ModuleLoader__.load({
         const totals = state.totals || {}
         const history = state.history || []
         const toolStats = state.toolStats || []
-        const DESK_COLS = 3
+        const DESK_COLS = 4
         const DESK_ROWS = 2
         const TOTAL_DESKS = DESK_COLS * DESK_ROWS
 
         // shallow isometric (2.5D): rows run horizontally, depth recedes up-right
-        const pitchX = 2.6
+        const pitchX = 2.2
         const pitchY = 3.4
-        const deskW = 1.8
+        const deskW = 1.7
         const deskD = 1.15
         const deskTopZ = 0.6
         const deskThick = 0.12

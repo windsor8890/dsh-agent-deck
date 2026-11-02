@@ -28,7 +28,7 @@
 ## 舞台视图
 
 **OFFICE（默认）** —— **浅等距 2.5D**办公场景（行是横向的，纵深朝后上方收；桌面/显示器/椅子/键盘都是
-斜投影实体块，不是 45° 旋转的等距棋盘），铺在舞台上方：两排 × 三列共 **6 张工位**，正好等于最大同时显示
+斜投影实体块，不是 45° 旋转的等距棋盘），铺在舞台上方：两排 × 四列共 **8 张工位**，正好等于最大同时显示
 单元数（`MAX_CARDS = 8`）；有 agent 时先坐满前排，空位保留为暗色工位。墙面有 `WATCHTOWER // FLOOR 07`
 招牌、夜景窗、走字钟、两块壁挂数据板；地面带纵深网格、黄色导引线、前景绿植。每张工位上的东西全部是真实遥测：
 
@@ -44,7 +44,7 @@
 | 桌角状态灯 | RUN 青 / WAIT 黄 / ERR 红 / SYNC 灰 |
 
 **点任意工位即可聚焦**（等于点 TUI 卡）。舞台最下方是**横排的四块读数面板**：
-AGGREGATE·THROUGHPUT（含吞吐曲线）、UNITS（`n / 6 DESKS`）、TOOL MIX·60s、RECENT CALLS。
+AGGREGATE·THROUGHPUT（含吞吐曲线）、UNITS（`n / 8 DESKS`）、TOOL MIX·60s、RECENT CALLS。
 原来那条独立图表带已并入 AGGREGATE 面板。
 
 **RADAR** —— 聚合反应堆视图（`M` 循环切换）：缓动的全局 tokens/s、随吞吐呼吸的核心、
@@ -64,6 +64,10 @@ AGGREGATE·THROUGHPUT（含吞吐曲线）、UNITS（`n / 6 DESKS`）、TOOL MIX
 | PHASE TIMELINE | THINK / ACT / OUT 三泳道 60s 甘特 | 流帧类型（reasoning-delta / tool-call-delta / text-delta）的相位变化 |
 | FILE HEAT | 被读写最多的文件条形图（w/r 计数） | 文件类工具调用的 `path` 参数 |
 | THRUPUT TRACE | 个体 tokens/s 曲线（72 采样） | 实时代币增量窗口 |
+
+## 空闲保留
+
+Session 停止运行后，工位保留 **3 分钟**，agent 继续坐在原位显示空闲姿势，之后才离场。左侧 LIVE FEED 仍只列正在运行的 agent，“只看工作中”的规则不变。
 
 ## 右栏遥测（12 块，全部真实数据）
 
@@ -123,7 +127,7 @@ todo 完成度合计）、以及缓动的 THRUPUT 读数。
 - 数据 100ms 批量发布，画布 60fps（`prefers-reduced-motion` 下停转）；矩阵/泳道/曲线为纯 DOM+SVG，无第三方图表库
 - **动效预算**：极坐标网格与辐条预渲染成静态图层（resize 时重建），每帧只画刻度环、弧、轨道点与图表；
   全局/单个 tokens/s 读数以 0.22 系数缓动（滚动感），不额外触发 DOM 重建
-- 最多同屏 6 张 TUI 卡（其余折叠进 `LIVE FEED +N`）；工具日志 160 条、相位 420 条、文件 40 个、吞吐 72 采样
+- 最多同屏 8 张 TUI 卡（其余折叠进 `LIVE FEED +N`）；工具日志 160 条、相位 420 条、文件 40 个、吞吐 72 采样
 - 会话结束（`running` 变 false）自动淡出并释放引用；已结束会话不上墙
 - 上下文窗口拿不到时显示 token 绝对值而非百分比 —— 不编造
 - 成本折算未做（模型单价不一定可通过客户端拿到）
