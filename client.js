@@ -1067,8 +1067,9 @@ window.__ModuleLoader__.load({
   --nxt-cy:#55ffff; --nxt-cy2:#00aaaa; --nxt-mg:#ff55ff; --nxt-mg2:#aa00aa;
   --nxt-am:#ffff55; --nxt-am2:#c47e00; --nxt-gr:#55ff55; --nxt-gr2:#00aa00;
   --nxt-rd:#ff5555; --nxt-rd2:#aa0000; --nxt-bl:#5555ff;
+  --nxt-frame:#ffff55;
   --nxt-ink:#aaaaaa; --nxt-ink2:#ffffff; --nxt-dim:#aaaaaa; --nxt-mute:#555555;
-  --nxt-line:rgba(85,255,255,0.2);
+  --nxt-line:rgba(255,255,85,0.18);
   position:relative; height:100%; width:100%; min-height:0; overflow:hidden; box-sizing:border-box;
   background:
     radial-gradient(120% 80% at 50% -10%, rgba(85,255,255,0.1), transparent 60%),
@@ -1101,12 +1102,12 @@ window.__ModuleLoader__.load({
 .nxt-sub{font-size:9px; letter-spacing:.22em; color:var(--nxt-dim); white-space:nowrap}
 .nxt-chips{display:flex; align-items:center; gap:6px; flex:1; flex-wrap:wrap; justify-content:center}
 .nxt-chip{display:inline-flex; align-items:center; gap:5px; padding:2px 8px; font-size:9px; letter-spacing:.16em;
-  color:var(--nxt-dim); border:1px solid rgba(85,255,255,0.16); background:rgba(10,10,10,0.7); text-transform:uppercase; white-space:nowrap}
+  color:var(--nxt-dim); border:0; background:rgba(16,16,12,0.72); text-transform:uppercase; white-space:nowrap}
 .nxt-chip b{color:var(--nxt-ink2); font-weight:600; font-variant-numeric:tabular-nums}
 .nxt-chip i{font-style:normal; color:var(--nxt-dim); font-size:8px}
-.nxt-chip.nxt-live{color:var(--nxt-cy); border-color:rgba(85,255,255,0.42)}
+.nxt-chip.nxt-live{color:var(--nxt-frame)}
 .nxt-dot{width:6px; height:6px; border-radius:50%; background:var(--nxt-cy); box-shadow:0 0 8px var(--nxt-cy); animation:nxt-pulse 1.6s ease-in-out infinite}
-.nxt-chip.nxt-bad{color:var(--nxt-rd); border-color:rgba(255,85,85,0.5)}
+.nxt-chip.nxt-bad{color:var(--nxt-rd)}
 .nxt-chip.nxt-bad b{color:var(--nxt-rd)}
 .nxt-clock{display:flex; align-items:baseline; gap:6px; margin-left:auto; color:var(--nxt-ink); font-variant-numeric:tabular-nums; letter-spacing:.14em}
 .nxt-clock #nxt-c-localtime{font-size:15px; color:#ffffff}
@@ -1121,30 +1122,27 @@ window.__ModuleLoader__.load({
   border:1px solid var(--nxt-line);
   background:linear-gradient(180deg, rgba(10,10,10,0.82), rgba(0,0,0,0.88));
   box-shadow:inset 0 0 34px rgba(85,255,255,0.045);}
-.nxt-panel::before,.nxt-panel::after{content:""; position:absolute; width:11px; height:11px; pointer-events:none; opacity:.75}
-.nxt-panel::before{top:-1px; left:-1px; border-top:2px solid var(--nxt-cy); border-left:2px solid var(--nxt-cy)}
-.nxt-panel::after{bottom:-1px; right:-1px; border-bottom:2px solid var(--nxt-mg); border-right:2px solid var(--nxt-mg)}
 .nxt-phead{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 9px 5px;
-  border-bottom:1px solid rgba(85,255,255,0.1); font-size:9px; letter-spacing:.22em; color:var(--nxt-cy); text-transform:uppercase}
+  border-bottom:1px solid rgba(255,255,85,0.08); font-size:9px; letter-spacing:.22em; color:var(--nxt-cy); text-transform:uppercase}
 .nxt-phead>span:first-child{flex:none}
 .nxt-phint{color:var(--nxt-dim); letter-spacing:.16em; font-size:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; text-align:right}
 
 .nxt-wall{overflow:auto; padding:8px; display:flex; flex-direction:column; gap:8px; min-height:0; flex:1 1 auto; scrollbar-width:thin}
 .nxt-wall::-webkit-scrollbar{width:6px}
 .nxt-wall::-webkit-scrollbar-thumb{background:rgba(85,255,255,0.25)}
-.nxt-card{position:relative; border:1px solid rgba(85,255,255,0.18); background:linear-gradient(180deg, rgba(10,10,10,0.94), rgba(0,0,0,0.94));
+.nxt-card{position:relative; border:0; border-left:2px solid rgba(255,255,255,0.14); background:linear-gradient(180deg, rgba(10,10,10,0.94), rgba(0,0,0,0.94));
   padding:7px 8px 6px; cursor:pointer; transition:border-color .18s, transform .18s, box-shadow .18s; border-left-width:2px;
   display:flex; flex-direction:column; flex:1 1 auto; min-height:158px; overflow:hidden}
-.nxt-card:hover{border-color:rgba(85,255,255,0.42); box-shadow:0 0 18px rgba(85,255,255,0.1)}
+.nxt-card:hover{border-left-color:var(--nxt-frame); background:rgba(16,17,20,0.98)}
 .nxt-card[data-state="run"]{border-left-color:var(--nxt-cy); box-shadow:inset 2px 0 12px -6px var(--nxt-cy)}
 .nxt-card[data-state="wait"]{border-left-color:var(--nxt-am)}
 .nxt-card[data-state="err"]{border-left-color:var(--nxt-rd); animation:nxt-alarm 2.2s ease-in-out infinite}
 .nxt-card[data-state="sync"]{border-left-color:var(--nxt-dim)}
-.nxt-card[data-focused="1"]{border-color:var(--nxt-mg); box-shadow:0 0 22px rgba(255,85,255,0.18)}
+.nxt-card[data-focused="1"]{border-left-color:var(--nxt-mg); box-shadow:0 0 22px rgba(255,85,255,0.18)}
 .nxt-chead{display:flex; align-items:center; gap:7px; min-width:0; flex:none}
 .nxt-cidx{font-size:9px; color:var(--nxt-mg); letter-spacing:.1em; flex:none}
 .nxt-cname{font-size:12px; font-weight:600; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1}
-.nxt-cstate{font-size:8px; letter-spacing:.18em; padding:1px 5px; border:1px solid currentColor; flex:none}
+.nxt-cstate{font-size:8px; letter-spacing:.18em; padding:1px 5px; border:0; flex:none}
 .nxt-card[data-state="run"] .nxt-cstate{color:var(--nxt-cy)}
 .nxt-card[data-state="wait"] .nxt-cstate{color:var(--nxt-am)}
 .nxt-card[data-state="err"] .nxt-cstate{color:var(--nxt-rd)}
@@ -1166,7 +1164,7 @@ window.__ModuleLoader__.load({
 .nxt-spark-svg{display:block; width:100%; height:100%}
 .nxt-bar{display:inline-block; width:46px; height:4px; background:rgba(85,255,255,0.14); position:relative; overflow:hidden; vertical-align:middle}
 .nxt-bar>i{display:block; height:100%; background:linear-gradient(90deg,var(--nxt-cy),var(--nxt-mg)); box-shadow:0 0 6px rgba(85,255,255,0.6)}
-.nxt-sec{margin-top:5px; padding-top:4px; border-top:1px dashed rgba(85,255,255,0.1);
+.nxt-sec{margin-top:5px; padding-top:4px;
   display:flex; flex-direction:column; flex:1 1 0; min-height:0}
 .nxt-lbl{display:block; font-size:7px; letter-spacing:.26em; color:#55ffff; margin-bottom:2px; flex:none}
 .nxt-stream{flex:1 1 0; min-height:0; max-height:none; overflow:hidden; font-size:10.5px; line-height:1.5; word-break:break-word;
@@ -1185,7 +1183,7 @@ window.__ModuleLoader__.load({
 .nxt-tool .nxt-tn{color:#ffff55; flex:none; max-width:42%; overflow:hidden; text-overflow:ellipsis}
 .nxt-tool .nxt-ta{color:#aaaaaa; overflow:hidden; text-overflow:ellipsis; flex:1}
 .nxt-tool .nxt-tm{color:#555555; flex:none; font-size:9px}
-.nxt-cfoot{display:flex; gap:8px; margin-top:5px; padding-top:4px; border-top:1px solid rgba(85,255,255,0.08);
+.nxt-cfoot{display:flex; gap:8px; margin-top:5px; padding-top:4px;
   font-size:7.5px; color:#555555; letter-spacing:.1em; font-variant-numeric:tabular-nums; flex:none}
 .nxt-standby{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:26px 10px; text-align:center}
 .nxt-standby b{font-size:11px; letter-spacing:.28em; color:var(--nxt-dim)}
@@ -1203,9 +1201,8 @@ window.__ModuleLoader__.load({
 .nxt-net-on .nxt-stage-hud{display:none}
 .nxt-hud-off .nxt-stage-hud{display:none}
 .nxt-shud{position:relative; flex:1 1 0; min-width:0; min-height:0; overflow:hidden; padding:6px 8px;
-  background:rgba(0,0,0,0.78); border:1px solid rgba(85,255,255,0.18);
+  background:rgba(0,0,0,0.78); border:0;
   font-size:9px; color:#aaaaaa; font-variant-numeric:tabular-nums; line-height:1.45}
-.nxt-shud::before{content:""; position:absolute; top:-1px; left:-1px; width:8px; height:8px; border-top:1px solid #55ffff; border-left:1px solid #55ffff}
 .nxt-shud-h{display:flex; justify-content:space-between; gap:10px; font-size:8px; letter-spacing:.2em; color:#55ffff; margin-bottom:4px}
 .nxt-shud-spark{margin-top:6px; height:34px; overflow:hidden}
 .nxt-shud-spark svg{width:100%; height:34px; display:block}
@@ -1281,13 +1278,12 @@ window.__ModuleLoader__.load({
 .nxt-code-line .v{color:#ffffff; font-weight:600; flex:none}
 .nxt-code-line .c{margin-left:auto; color:#555555; font-style:normal; font-size:7px; flex:none}
 .nxt-chipsinline{display:flex; gap:4px; margin-top:6px; flex-wrap:wrap}
-.nxt-chipsinline b{font-weight:600; font-size:7px; letter-spacing:.12em; color:#55ffff;
-  border:1px solid rgba(85,255,255,0.35); padding:1px 4px; white-space:nowrap}
+.nxt-chipsinline b{font-weight:600; font-size:7px; letter-spacing:.12em; color:var(--nxt-frame); padding:1px 4px; white-space:nowrap; background:rgba(255,255,85,0.08)}
 .nxt-chip .nxt-bar-wide{width:54px; height:5px; vertical-align:middle;
   background:repeating-linear-gradient(45deg, rgba(85,85,85,0.55) 0 2px, rgba(0,0,0,0.25) 2px 4px)}
 .nxt-leader{display:flex; align-items:baseline; gap:6px; flex:1; min-width:0; overflow:hidden}
 .nxt-leader>span{flex:none; color:#555555; font-size:7px; letter-spacing:.16em}
-.nxt-leader>i{flex:1; min-width:8px; border-bottom:1px dotted rgba(85,255,255,0.28); transform:translateY(-2px)}
+.nxt-leader>i{flex:1; min-width:8px; border-bottom:1px dotted rgba(255,255,85,0.26); transform:translateY(-2px)}
 .nxt-leader>b{flex:none; max-width:62%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#aaaaaa; font-weight:500}
 
 .nxt-ticker{display:flex; align-items:center; gap:14px; padding:4px 12px; border-top:1px solid var(--nxt-line);
@@ -1296,18 +1292,13 @@ window.__ModuleLoader__.load({
 .nxt-ticker .nxt-tv{overflow:hidden; text-overflow:ellipsis}
 .nxt-ticker .nxt-ts{margin-left:auto; color:#555555; font-variant-numeric:tabular-nums; flex:none}
 
-.nxt-scan,.nxt-vig{position:absolute; inset:0; pointer-events:none; z-index:6}
-.nxt-scan{background:repeating-linear-gradient(180deg, rgba(85,255,255,.055) 0 1px, transparent 1px 3px); opacity:.55; mix-blend-mode:screen}
+.nxt-vig{position:absolute; inset:0; pointer-events:none; z-index:6}
 .nxt-vig{background:radial-gradient(125% 95% at 50% 42%, transparent 44%, rgba(0,0,0,.6) 100%)}
-.nxt-sweep{position:absolute; left:0; right:0; height:110px; z-index:5; pointer-events:none;
-  background:linear-gradient(180deg, transparent, rgba(85,255,255,0.05) 55%, rgba(85,255,255,0.12) 88%, transparent);
-  animation:nxt-sweep 7.5s linear infinite}
 
 @keyframes nxt-pulse{0%,100%{opacity:1; transform:scale(1)}50%{opacity:.35; transform:scale(.72)}}
 @keyframes nxt-dot{0%,80%,100%{opacity:.2; transform:translateY(0)}40%{opacity:1; transform:translateY(-1px)}}
 @keyframes nxt-blink{0%,100%{opacity:1}50%{opacity:.25}}
 @keyframes nxt-alarm{0%,100%{box-shadow:inset 2px 0 12px -6px var(--nxt-rd)}50%{box-shadow:inset 2px 0 22px -4px rgba(255,85,85,0.9)}}
-@keyframes nxt-sweep{0%{top:-24%}100%{top:104%}}
 @keyframes nxt-glitch{
   0%,88%,100%{transform:none; text-shadow:none}
   89%{transform:translateX(1px); text-shadow:1px 0 var(--nxt-mg), -1px 0 var(--nxt-cy)}
@@ -1315,13 +1306,13 @@ window.__ModuleLoader__.load({
   93%{transform:none; text-shadow:none}
 }
 @media (prefers-reduced-motion: reduce){
-  .nxt-root .nxt-title,.nxt-root .nxt-dot,.nxt-root .nxt-sweep,.nxt-root .nxt-alert,.nxt-root .nxt-card[data-state="err"]{animation:none}
+  .nxt-root .nxt-title,.nxt-root .nxt-dot,.nxt-root .nxt-alert,.nxt-root .nxt-card[data-state="err"]{animation:none}
 }
 .nxt-modes{display:flex; gap:4px; margin-left:8px; flex:none}
 .nxt-mode{font:600 8px/1 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.14em; padding:3px 6px; cursor:pointer;
-  border:1px solid rgba(85,255,255,0.22); background:rgba(10,10,10,0.7); color:#aaaaaa; border-radius:0; text-transform:uppercase}
-.nxt-mode:hover{color:#55ffff; border-color:rgba(85,255,255,0.5)}
-.nxt-mode[data-active="1"]{color:#000000; background:#55ffff; border-color:#55ffff; box-shadow:none}
+  border:1px solid rgba(255,255,85,0.22); background:rgba(10,10,10,0.7); color:#aaaaaa; border-radius:0; text-transform:uppercase}
+.nxt-mode:hover{color:var(--nxt-frame); border-color:rgba(255,255,85,0.5)}
+.nxt-mode[data-active="1"]{color:#000000; background:#ffff55; border-color:#ffff55; box-shadow:none}
 .nxt-cinema .nxt-wallpanel,.nxt-cinema .nxt-railpanel{display:none}
 .nxt-cinema .nxt-body{grid-template-columns:minmax(0,1fr)}
 
@@ -1335,8 +1326,7 @@ window.__ModuleLoader__.load({
 .nxt-focus-on .nxt-wallpanel,.nxt-focus-on .nxt-railpanel{display:none}
 .nxt-focus-on .nxt-body{grid-template-columns:minmax(0,1fr)}
 .nxt-aw{position:relative; display:flex; flex-direction:column; gap:4px; min-height:0; min-width:0; overflow:hidden;
-  border:1px solid rgba(85,255,255,0.14); background:linear-gradient(180deg, rgba(10,10,10,0.78), rgba(0,0,0,0.82)); padding:6px 7px}
-.nxt-aw::before{content:""; position:absolute; top:-1px; left:-1px; width:9px; height:9px; border-top:2px solid var(--nxt-cy); border-left:2px solid var(--nxt-cy); opacity:.8}
+  border:0; background:linear-gradient(180deg, rgba(10,10,10,0.78), rgba(0,0,0,0.82)); padding:6px 7px}
 .nxt-aw-h{display:flex; align-items:center; justify-content:space-between; font-size:8px; letter-spacing:.2em; color:#55ffff; text-transform:uppercase; flex:none}
 .nxt-aw-h b{color:var(--nxt-cy); font-weight:600; letter-spacing:.08em}
 .nxt-aw-body{flex:1; min-height:0; display:flex; flex-direction:column; gap:3px; overflow:hidden; justify-content:center}
@@ -1436,8 +1426,6 @@ window.__ModuleLoader__.load({
     </div>
   </div>
   <div class="nxt-ticker" id="nxt-ticker"></div>
-  <div class="nxt-sweep"></div>
-  <div class="nxt-scan"></div>
   <div class="nxt-vig"></div>
 </div>
 `
@@ -3257,8 +3245,8 @@ window.__ModuleLoader__.load({
             context.stroke()
           }
           const topGlow = context.createLinearGradient(0, 0, 0, 6)
-          topGlow.addColorStop(0, 'rgba(85,255,255,0.3)')
-          topGlow.addColorStop(1, 'rgba(85,255,255,0)')
+          topGlow.addColorStop(0, 'rgba(255,255,85,0.26)')
+          topGlow.addColorStop(1, 'rgba(255,255,85,0)')
           context.fillStyle = topGlow
           context.fillRect(0, 0, areaW, 6)
           // upper-wall dressing so the extra height does not read as empty
@@ -3313,12 +3301,12 @@ window.__ModuleLoader__.load({
         quad(
           [iso(minX, minY, 0), iso(maxX, minY, 0), iso(maxX, minY, wallH), iso(minX, minY, wallH)],
           wallInk,
-          'rgba(85,255,255,0.2)',
+          'rgba(255,255,85,0.26)',
         )
         quad(
           [iso(minX, minY, 0), iso(minX, maxY, 0), iso(minX, maxY, wallH), iso(minX, minY, wallH)],
           'rgba(7,7,7,0.99)',
-          'rgba(85,255,255,0.16)',
+          'rgba(255,255,85,0.2)',
         )
         context.save()
         context.strokeStyle = 'rgba(85,255,255,0.1)'
@@ -3339,13 +3327,13 @@ window.__ModuleLoader__.load({
           context.lineTo(b.x, b.y)
           context.stroke()
         }
-        quad([iso(minX, minY, 1.9), iso(maxX, minY, 1.9), iso(maxX, minY, 2.04), iso(minX, minY, 2.04)], wallTrim, 'rgba(85,255,255,0.16)')
+        quad([iso(minX, minY, 1.9), iso(maxX, minY, 1.9), iso(maxX, minY, 2.04), iso(minX, minY, 2.04)], wallTrim, 'rgba(255,255,85,0.2)')
         const baseA = iso(minX, minY, 0.04)
         const baseB = iso(maxX, minY, 0.04)
         const baseGrad = context.createLinearGradient(baseA.x, baseA.y, baseB.x, baseB.y)
-        baseGrad.addColorStop(0, 'rgba(85,255,255,0.05)')
-        baseGrad.addColorStop(0.45, 'rgba(85,255,255,0.36)')
-        baseGrad.addColorStop(1, 'rgba(85,255,255,0.06)')
+        baseGrad.addColorStop(0, 'rgba(255,255,85,0.05)')
+        baseGrad.addColorStop(0.45, 'rgba(255,255,85,0.34)')
+        baseGrad.addColorStop(1, 'rgba(255,255,85,0.06)')
         context.strokeStyle = baseGrad
         context.lineWidth = 2
         context.beginPath()
@@ -3501,7 +3489,7 @@ window.__ModuleLoader__.load({
         wallPanel(maxX - 2.9, 'TOOL LOAD', toolStats.slice(0, 8).map((stat) => stat.calls), 'bars', '#55ff55')
 
         // floor + grid
-        quad([iso(minX, minY, 0), iso(maxX, minY, 0), iso(maxX, maxY, 0), iso(minX, maxY, 0)], floorInk, 'rgba(85,255,255,0.16)')
+        quad([iso(minX, minY, 0), iso(maxX, minY, 0), iso(maxX, maxY, 0), iso(minX, maxY, 0)], floorInk, 'rgba(255,255,85,0.2)')
         context.save()
         for (let gx = Math.ceil(minX); gx <= maxX; gx++) {
           context.strokeStyle = gx % 2 === 0 ? 'rgba(85,255,255,0.10)' : 'rgba(85,255,255,0.05)'
