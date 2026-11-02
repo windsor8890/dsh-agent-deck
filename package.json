@@ -1,6 +1,6 @@
 {
   "name": "dsh-agent-deck",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Agent Deck: cyberpunk HUD console that watches every working agent's thinking, tool calls and output live.",
@@ -16,7 +16,8 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
-    "README.md"
+    "README.md",
+    "assets/*.png"
   ],
   "dsh": {
     "bundle": {
