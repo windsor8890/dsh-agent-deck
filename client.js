@@ -2075,305 +2075,6 @@ window.__ModuleLoader__.load({
     //#endregion
 
     //#region canvas stage
-    function startStage(canvas, readState, onPick) {
-      const context = canvas.getContext('2d')
-      if (!context) return () => {}
-      const reduceMotion = (() => {
-        try {
-          return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-        } catch (err) {
-          return false
-        }
-      })()
-      let raf = 0
-      let width = 0
-      let height = 0
-      let dpr = 1
-      const history = []
-      let lastSample = 0
-      let lastWave = 0
-      let angle = 0
-      let hitAreas = []
-      let gridLayer = null
-      let gridLayerKey = ''
-      // Unit-radius gradients reused every frame; per-draw glow is a scale transform,
-      // which keeps the 60fps loop free of per-frame gradient allocation.
-      const unitGradient = (stops) => {
-        const gradient = context.createRadialGradient(0, 0, 0, 0, 0, 1)
-        for (const stop of stops) gradient.addColorStop(stop[0], stop[1])
-        return gradient
-      }
-      const glows = {
-        reactorHot: unitGradient([
-          [0, 'rgba(85,255,255,0.58)'],
-          [0.45, 'rgba(255,85,255,0.22)'],
-          [1, 'rgba(0,0,0,0)'],
-        ]),
-        reactorIdle: unitGradient([
-          [0, 'rgba(85,255,255,0.3)'],
-          [0.45, 'rgba(255,85,255,0.1)'],
-          [1, 'rgba(0,0,0,0)'],
-        ]),
-        nodeCyan: unitGradient([
-          [0, 'rgba(85,255,255,0.22)'],
-          [1, 'rgba(0,0,0,0)'],
-        ]),
-        nodeDim: unitGradient([
-          [0, 'rgba(85,85,85,0.1)'],
-          [1, 'rgba(0,0,0,0)'],
-        ]),
-        host: unitGradient([
-          [0, 'rgba(255,85,255,0.26)'],
-          [1, 'rgba(0,0,0,0)'],
-        ]),
-      }
-
-      function resize() {
-        const rect = canvas.getBoundingClientRect()
-        dpr = Math.min(2, window.devicePixelRatio || 1)
-        width = Math.max(1, Math.floor(rect.width))
-        height = Math.max(1, Math.floor(rect.height))
-        canvas.width = Math.floor(width * dpr)
-        canvas.height = Math.floor(height * dpr)
-      }
-
-      function draw() {
-        raf = window.requestAnimationFrame(draw)
-        const state = readState()
-        const now = performance.now()
-        const dt = lastSample === 0 ? 16 : Math.min(120, now - lastSample)
-        lastSample = now
-        if (!reduceMotion) angle += dt * 0.00035 * (1 + Math.min(6, state.totals.tps) * 0.12)
-        if (width === 0 || height === 0) resize()
-        context.setTransform(dpr, 0, 0, dpr, 0, 0)
-        context.clearRect(0, 0, width, height)
-        if (state.hidden) {
-          hitAreas = []
-          return
-        }
-        if (state.mode === 'net') {
-          drawNetwork(state, now)
-          return
-        }
-        hitAreas = []
-
-        const focused = state.focused
-        const agents = state.agents
-        const hudRow = state.hud ? Math.min(250, Math.max(150, height * 0.3)) + 10 : 0
-        const heroW = width
-        const heroH = Math.max(140, height - hudRow)
-        const cx = heroW / 2
-        const cy = heroH / 2
-        const radius = Math.max(46, Math.min(heroW * 0.45, heroH * 0.44))
-
-        if (state.mode === 'office') {
-          drawOffice(state, now, heroW, heroH)
-        } else {
-        // aggregate radar reactor (kept as its own view)
-        // static grid layer: rings and spokes are rendered once per geometry change
-        const paintGrid = (target) => {
-          target.strokeStyle = 'rgba(85,255,255,0.10)'
-          target.lineWidth = 1
-          for (let ring = 1; ring <= 3; ring++) {
-            target.beginPath()
-            target.arc(cx, cy, (radius * ring) / 3, 0, Math.PI * 2)
-            target.stroke()
-          }
-          target.strokeStyle = 'rgba(85,255,255,0.055)'
-          for (let spoke = 0; spoke < 12; spoke++) {
-            const spokeAngle = (spoke / 12) * Math.PI * 2
-            target.beginPath()
-            target.moveTo(cx + Math.cos(spokeAngle) * radius * 0.10, cy + Math.sin(spokeAngle) * radius * 0.10)
-            target.lineTo(cx + Math.cos(spokeAngle) * radius, cy + Math.sin(spokeAngle) * radius)
-            target.stroke()
-          }
-          target.strokeStyle = 'rgba(85,255,255,0.14)'
-          target.beginPath()
-          target.arc(cx, cy, radius * 1.12, 0, Math.PI * 2)
-          target.stroke()
-        }
-        const canCacheGrid = typeof document !== 'undefined' && document && typeof document.createElement === 'function'
-        const gridKey = width + 'x' + height + ':' + Math.round(cx) + ':' + Math.round(cy) + ':' + Math.round(radius) + ':' + dpr
-        if (canCacheGrid && (!gridLayer || gridLayerKey !== gridKey)) {
-          gridLayer = document.createElement('canvas')
-          gridLayer.width = Math.max(1, Math.floor(width * dpr))
-          gridLayer.height = Math.max(1, Math.floor(height * dpr))
-          const grid = gridLayer.getContext('2d')
-          if (grid) {
-            grid.setTransform(dpr, 0, 0, dpr, 0, 0)
-            grid.clearRect(0, 0, width, height)
-            paintGrid(grid)
-          }
-          gridLayerKey = gridKey
-        }
-        if (canCacheGrid && gridLayer) {
-          context.drawImage(gridLayer, 0, 0, width, height)
-        } else {
-          context.save()
-          paintGrid(context)
-          context.restore()
-        }
-
-        // rotating tick ring (the only moving part of the grid)
-        context.save()
-        context.strokeStyle = 'rgba(85,255,255,0.28)'
-        context.lineWidth = 1.5
-        for (let tick = 0; tick < 36; tick++) {
-          const tickAngle = (tick / 36) * Math.PI * 2 + angle
-          const long = tick % 3 === 0
-          context.beginPath()
-          context.moveTo(cx + Math.cos(tickAngle) * radius * 1.02, cy + Math.sin(tickAngle) * radius * 1.02)
-          context.lineTo(cx + Math.cos(tickAngle) * radius * (long ? 1.09 : 1.05), cy + Math.sin(tickAngle) * radius * (long ? 1.09 : 1.05))
-          context.stroke()
-        }
-        context.restore()
-
-        // core reactor
-        const pulse = 0.5 + 0.5 * Math.sin(now / 620)
-        const load = Math.min(1, state.totals.tps / 48)
-        const coreR = radius * (0.16 + load * 0.05 + pulse * 0.012)
-        const glowR = coreR * 2.6
-        context.save()
-        context.translate(cx, cy)
-        context.scale(glowR, glowR)
-        context.fillStyle = load > 0.04 ? glows.reactorHot : glows.reactorIdle
-        context.beginPath()
-        context.arc(0, 0, 1, 0, Math.PI * 2)
-        context.fill()
-        context.restore()
-        context.strokeStyle = 'rgba(85,255,255,0.85)'
-        context.lineWidth = 1.6
-        context.beginPath()
-        context.arc(cx, cy, coreR, 0, Math.PI * 2)
-        context.stroke()
-        context.strokeStyle = 'rgba(255,85,255,0.75)'
-        context.lineWidth = 2.2
-        context.beginPath()
-        context.arc(cx, cy, coreR * 0.62, angle * 2.4, angle * 2.4 + Math.PI * 1.15)
-        context.stroke()
-        context.strokeStyle = 'rgba(85,255,255,0.55)'
-        context.lineWidth = 1
-        context.beginPath()
-        context.arc(cx, cy, coreR * 0.34, -angle * 3.6, -angle * 3.6 + Math.PI * 1.5)
-        context.stroke()
-
-        // central readout
-        context.save()
-        context.textAlign = 'center'
-        context.fillStyle = 'rgba(255,255,255,0.92)'
-        context.font = '600 ' + Math.round(clamp(radius * 0.16, 15, 30)) + 'px "JetBrains Mono", ui-monospace, monospace'
-        context.fillText((state.totals.tpsDisplay || state.totals.tps).toFixed(1), cx, cy - coreR * 1.45)
-        context.fillStyle = 'rgba(85,85,85,0.9)'
-        context.font = '9px "JetBrains Mono", ui-monospace, monospace'
-        context.fillText('TOKENS / SEC · AGGREGATE', cx, cy - coreR * 1.45 + 13)
-        context.restore()
-
-        if (agents.length === 0) {
-          const breathe = 0.4 + 0.4 * Math.abs(Math.sin(now / 900))
-          context.save()
-          context.textAlign = 'center'
-          context.fillStyle = 'rgba(85,255,255,' + breathe.toFixed(2) + ')'
-          context.font = '600 12px "JetBrains Mono", ui-monospace, monospace'
-          context.fillText('— STANDBY · AWAITING UNIT TELEMETRY —', cx, cy + coreR * 2.3)
-          context.fillStyle = 'rgba(85,85,85,0.95)'
-          context.font = '9px "JetBrains Mono", ui-monospace, monospace'
-          context.fillText('the next working unit lights up here automatically', cx, cy + coreR * 2.3 + 18)
-          context.restore()
-        }
-
-        // per-agent arcs: angular share by throughput
-        const total = agents.reduce((sum, a) => sum + Math.max(0.4, a.tps), 0)
-        let start = -Math.PI / 2
-        const arcR = radius * 0.72
-        for (const agent of agents) {
-          const share = Math.max(0.4, agent.tps) / Math.max(1, total)
-          const span = share * Math.PI * 2 * 0.92
-          const color = STATE_COLOR[agent.state] || STATE_COLOR.sync
-          const dim = focused && focused !== agent.id
-          context.save()
-          context.globalAlpha = dim ? 0.18 : 0.9
-          context.strokeStyle = color
-          context.lineWidth = agent.id === focused ? 7 : 4
-          context.shadowColor = color
-          context.shadowBlur = agent.id === focused ? 18 : 8
-          context.beginPath()
-          context.arc(cx, cy, arcR, start, start + span)
-          context.stroke()
-          context.restore()
-          // arc annotation: identity tag + live tokens/s on the arc midpoint
-          if (agents.length <= 4 && span > 0.22) {
-            const midAngle = start + span / 2
-            const labelRadius = arcR - 15
-            const labelX = cx + Math.cos(midAngle) * labelRadius
-            const labelY = cy + Math.sin(midAngle) * labelRadius
-            context.save()
-            context.globalAlpha = dim ? 0.22 : 0.95
-            context.textAlign = 'center'
-            context.textBaseline = 'middle'
-            context.fillStyle = agent.color || color
-            context.font = '8px "JetBrains Mono", ui-monospace, monospace'
-            context.fillText(agent.tag + '  ' + agent.displayTps.toFixed(1), labelX, labelY)
-            context.restore()
-          }
-          start += span + 0.035
-        }
-
-        // agent orbs on the outer ring with trails (per-agent identity color)
-        const orbR = radius * 0.93
-        agents.forEach((agent, index) => {
-          const baseAngle = -Math.PI / 2 + (index / Math.max(1, agents.length)) * Math.PI * 2
-          const a = baseAngle + (reduceMotion ? 0 : Math.sin(now / 3200 + index) * 0.05)
-          const x = cx + Math.cos(a) * orbR
-          const y = cy + Math.sin(a) * orbR
-          const color = agent.color || STATE_COLOR[agent.state] || STATE_COLOR.sync
-          const dim = focused && focused !== agent.id
-          context.save()
-          context.globalAlpha = dim ? 0.2 : 1
-          for (let t = 3; t >= 1; t--) {
-            const ta = a - t * 0.05
-            context.beginPath()
-            context.arc(cx + Math.cos(ta) * orbR, cy + Math.sin(ta) * orbR, 2.4 - t * 0.4, 0, Math.PI * 2)
-            context.fillStyle = color
-            context.globalAlpha = (dim ? 0.2 : 1) * (0.10 * (4 - t))
-            context.fill()
-          }
-          context.globalAlpha = dim ? 0.25 : 1
-          context.shadowColor = color
-          context.shadowBlur = 14
-          context.beginPath()
-          const size = agent.id === focused ? 6.5 : 4.6
-          for (let corner = 0; corner < 6; corner++) {
-            const ca = (corner / 6) * Math.PI * 2 + Math.PI / 6
-            const px = x + Math.cos(ca) * size
-            const py = y + Math.sin(ca) * size
-            if (corner === 0) context.moveTo(px, py)
-            else context.lineTo(px, py)
-          }
-          context.closePath()
-          context.fillStyle = color
-          context.fill()
-          context.shadowBlur = 0
-          context.fillStyle = dim ? 'rgba(170,170,170,0.5)' : 'rgba(255,255,255,0.86)'
-          context.font = '9px "JetBrains Mono", ui-monospace, monospace'
-          context.textAlign = x > cx ? 'left' : 'right'
-          const label = agent.tag + ' ' + (agent.name || '').slice(0, 14)
-          context.fillText(label, x + (x > cx ? 10 : -10), y + 3)
-          context.restore()
-        })
-
-        }
-
-        // (throughput chart moved into the bottom readout row)
-      }
-
-      /**
-       * Office floor: one isometric-ish desk per live agent. Everything on a desk is
-       * real telemetry — the monitor draws that unit's own mini chart, the lamp and
-       * screen frame carry its state, the desk bar is its context pressure, and the
-       * wall displays aggregate throughput / tool load.
-       */
-    // whale-girl agent mascot, drawn after the reference sheet:
-    // long hair + lace headdress + whale-fin ears + whale tail + navy maid dress with a whale apron.
     // reference sprites: four poses of the same whale-girl sheet. Backgrounds are
     // keyed to transparency once, blue pixels (hair, tail, fins) are recoloured per
     // agent, and the content bounding box keeps every pose aligned on the floor.
@@ -3144,6 +2845,305 @@ window.__ModuleLoader__.load({
       context.restore()
     }
 
+    function startStage(canvas, readState, onPick) {
+      const context = canvas.getContext('2d')
+      if (!context) return () => {}
+      const reduceMotion = (() => {
+        try {
+          return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        } catch (err) {
+          return false
+        }
+      })()
+      let raf = 0
+      let width = 0
+      let height = 0
+      let dpr = 1
+      const history = []
+      let lastSample = 0
+      let lastWave = 0
+      let angle = 0
+      let hitAreas = []
+      let gridLayer = null
+      let gridLayerKey = ''
+      // Unit-radius gradients reused every frame; per-draw glow is a scale transform,
+      // which keeps the 60fps loop free of per-frame gradient allocation.
+      const unitGradient = (stops) => {
+        const gradient = context.createRadialGradient(0, 0, 0, 0, 0, 1)
+        for (const stop of stops) gradient.addColorStop(stop[0], stop[1])
+        return gradient
+      }
+      const glows = {
+        reactorHot: unitGradient([
+          [0, 'rgba(85,255,255,0.58)'],
+          [0.45, 'rgba(255,85,255,0.22)'],
+          [1, 'rgba(0,0,0,0)'],
+        ]),
+        reactorIdle: unitGradient([
+          [0, 'rgba(85,255,255,0.3)'],
+          [0.45, 'rgba(255,85,255,0.1)'],
+          [1, 'rgba(0,0,0,0)'],
+        ]),
+        nodeCyan: unitGradient([
+          [0, 'rgba(85,255,255,0.22)'],
+          [1, 'rgba(0,0,0,0)'],
+        ]),
+        nodeDim: unitGradient([
+          [0, 'rgba(85,85,85,0.1)'],
+          [1, 'rgba(0,0,0,0)'],
+        ]),
+        host: unitGradient([
+          [0, 'rgba(255,85,255,0.26)'],
+          [1, 'rgba(0,0,0,0)'],
+        ]),
+      }
+
+      function resize() {
+        const rect = canvas.getBoundingClientRect()
+        dpr = Math.min(2, window.devicePixelRatio || 1)
+        width = Math.max(1, Math.floor(rect.width))
+        height = Math.max(1, Math.floor(rect.height))
+        canvas.width = Math.floor(width * dpr)
+        canvas.height = Math.floor(height * dpr)
+      }
+
+      function draw() {
+        raf = window.requestAnimationFrame(draw)
+        const state = readState()
+        const now = performance.now()
+        const dt = lastSample === 0 ? 16 : Math.min(120, now - lastSample)
+        lastSample = now
+        if (!reduceMotion) angle += dt * 0.00035 * (1 + Math.min(6, state.totals.tps) * 0.12)
+        if (width === 0 || height === 0) resize()
+        context.setTransform(dpr, 0, 0, dpr, 0, 0)
+        context.clearRect(0, 0, width, height)
+        if (state.hidden) {
+          hitAreas = []
+          return
+        }
+        if (state.mode === 'net') {
+          drawNetwork(state, now)
+          return
+        }
+        hitAreas = []
+
+        const focused = state.focused
+        const agents = state.agents
+        const hudRow = state.hud ? Math.min(250, Math.max(150, height * 0.3)) + 10 : 0
+        const heroW = width
+        const heroH = Math.max(140, height - hudRow)
+        const cx = heroW / 2
+        const cy = heroH / 2
+        const radius = Math.max(46, Math.min(heroW * 0.45, heroH * 0.44))
+
+        if (state.mode === 'office') {
+          drawOffice(state, now, heroW, heroH)
+        } else {
+        // aggregate radar reactor (kept as its own view)
+        // static grid layer: rings and spokes are rendered once per geometry change
+        const paintGrid = (target) => {
+          target.strokeStyle = 'rgba(85,255,255,0.10)'
+          target.lineWidth = 1
+          for (let ring = 1; ring <= 3; ring++) {
+            target.beginPath()
+            target.arc(cx, cy, (radius * ring) / 3, 0, Math.PI * 2)
+            target.stroke()
+          }
+          target.strokeStyle = 'rgba(85,255,255,0.055)'
+          for (let spoke = 0; spoke < 12; spoke++) {
+            const spokeAngle = (spoke / 12) * Math.PI * 2
+            target.beginPath()
+            target.moveTo(cx + Math.cos(spokeAngle) * radius * 0.10, cy + Math.sin(spokeAngle) * radius * 0.10)
+            target.lineTo(cx + Math.cos(spokeAngle) * radius, cy + Math.sin(spokeAngle) * radius)
+            target.stroke()
+          }
+          target.strokeStyle = 'rgba(85,255,255,0.14)'
+          target.beginPath()
+          target.arc(cx, cy, radius * 1.12, 0, Math.PI * 2)
+          target.stroke()
+        }
+        const canCacheGrid = typeof document !== 'undefined' && document && typeof document.createElement === 'function'
+        const gridKey = width + 'x' + height + ':' + Math.round(cx) + ':' + Math.round(cy) + ':' + Math.round(radius) + ':' + dpr
+        if (canCacheGrid && (!gridLayer || gridLayerKey !== gridKey)) {
+          gridLayer = document.createElement('canvas')
+          gridLayer.width = Math.max(1, Math.floor(width * dpr))
+          gridLayer.height = Math.max(1, Math.floor(height * dpr))
+          const grid = gridLayer.getContext('2d')
+          if (grid) {
+            grid.setTransform(dpr, 0, 0, dpr, 0, 0)
+            grid.clearRect(0, 0, width, height)
+            paintGrid(grid)
+          }
+          gridLayerKey = gridKey
+        }
+        if (canCacheGrid && gridLayer) {
+          context.drawImage(gridLayer, 0, 0, width, height)
+        } else {
+          context.save()
+          paintGrid(context)
+          context.restore()
+        }
+
+        // rotating tick ring (the only moving part of the grid)
+        context.save()
+        context.strokeStyle = 'rgba(85,255,255,0.28)'
+        context.lineWidth = 1.5
+        for (let tick = 0; tick < 36; tick++) {
+          const tickAngle = (tick / 36) * Math.PI * 2 + angle
+          const long = tick % 3 === 0
+          context.beginPath()
+          context.moveTo(cx + Math.cos(tickAngle) * radius * 1.02, cy + Math.sin(tickAngle) * radius * 1.02)
+          context.lineTo(cx + Math.cos(tickAngle) * radius * (long ? 1.09 : 1.05), cy + Math.sin(tickAngle) * radius * (long ? 1.09 : 1.05))
+          context.stroke()
+        }
+        context.restore()
+
+        // core reactor
+        const pulse = 0.5 + 0.5 * Math.sin(now / 620)
+        const load = Math.min(1, state.totals.tps / 48)
+        const coreR = radius * (0.16 + load * 0.05 + pulse * 0.012)
+        const glowR = coreR * 2.6
+        context.save()
+        context.translate(cx, cy)
+        context.scale(glowR, glowR)
+        context.fillStyle = load > 0.04 ? glows.reactorHot : glows.reactorIdle
+        context.beginPath()
+        context.arc(0, 0, 1, 0, Math.PI * 2)
+        context.fill()
+        context.restore()
+        context.strokeStyle = 'rgba(85,255,255,0.85)'
+        context.lineWidth = 1.6
+        context.beginPath()
+        context.arc(cx, cy, coreR, 0, Math.PI * 2)
+        context.stroke()
+        context.strokeStyle = 'rgba(255,85,255,0.75)'
+        context.lineWidth = 2.2
+        context.beginPath()
+        context.arc(cx, cy, coreR * 0.62, angle * 2.4, angle * 2.4 + Math.PI * 1.15)
+        context.stroke()
+        context.strokeStyle = 'rgba(85,255,255,0.55)'
+        context.lineWidth = 1
+        context.beginPath()
+        context.arc(cx, cy, coreR * 0.34, -angle * 3.6, -angle * 3.6 + Math.PI * 1.5)
+        context.stroke()
+
+        // central readout
+        context.save()
+        context.textAlign = 'center'
+        context.fillStyle = 'rgba(255,255,255,0.92)'
+        context.font = '600 ' + Math.round(clamp(radius * 0.16, 15, 30)) + 'px "JetBrains Mono", ui-monospace, monospace'
+        context.fillText((state.totals.tpsDisplay || state.totals.tps).toFixed(1), cx, cy - coreR * 1.45)
+        context.fillStyle = 'rgba(85,85,85,0.9)'
+        context.font = '9px "JetBrains Mono", ui-monospace, monospace'
+        context.fillText('TOKENS / SEC · AGGREGATE', cx, cy - coreR * 1.45 + 13)
+        context.restore()
+
+        if (agents.length === 0) {
+          const breathe = 0.4 + 0.4 * Math.abs(Math.sin(now / 900))
+          context.save()
+          context.textAlign = 'center'
+          context.fillStyle = 'rgba(85,255,255,' + breathe.toFixed(2) + ')'
+          context.font = '600 12px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('— STANDBY · AWAITING UNIT TELEMETRY —', cx, cy + coreR * 2.3)
+          context.fillStyle = 'rgba(85,85,85,0.95)'
+          context.font = '9px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('the next working unit lights up here automatically', cx, cy + coreR * 2.3 + 18)
+          context.restore()
+        }
+
+        // per-agent arcs: angular share by throughput
+        const total = agents.reduce((sum, a) => sum + Math.max(0.4, a.tps), 0)
+        let start = -Math.PI / 2
+        const arcR = radius * 0.72
+        for (const agent of agents) {
+          const share = Math.max(0.4, agent.tps) / Math.max(1, total)
+          const span = share * Math.PI * 2 * 0.92
+          const color = STATE_COLOR[agent.state] || STATE_COLOR.sync
+          const dim = focused && focused !== agent.id
+          context.save()
+          context.globalAlpha = dim ? 0.18 : 0.9
+          context.strokeStyle = color
+          context.lineWidth = agent.id === focused ? 7 : 4
+          context.shadowColor = color
+          context.shadowBlur = agent.id === focused ? 18 : 8
+          context.beginPath()
+          context.arc(cx, cy, arcR, start, start + span)
+          context.stroke()
+          context.restore()
+          // arc annotation: identity tag + live tokens/s on the arc midpoint
+          if (agents.length <= 4 && span > 0.22) {
+            const midAngle = start + span / 2
+            const labelRadius = arcR - 15
+            const labelX = cx + Math.cos(midAngle) * labelRadius
+            const labelY = cy + Math.sin(midAngle) * labelRadius
+            context.save()
+            context.globalAlpha = dim ? 0.22 : 0.95
+            context.textAlign = 'center'
+            context.textBaseline = 'middle'
+            context.fillStyle = agent.color || color
+            context.font = '8px "JetBrains Mono", ui-monospace, monospace'
+            context.fillText(agent.tag + '  ' + agent.displayTps.toFixed(1), labelX, labelY)
+            context.restore()
+          }
+          start += span + 0.035
+        }
+
+        // agent orbs on the outer ring with trails (per-agent identity color)
+        const orbR = radius * 0.93
+        agents.forEach((agent, index) => {
+          const baseAngle = -Math.PI / 2 + (index / Math.max(1, agents.length)) * Math.PI * 2
+          const a = baseAngle + (reduceMotion ? 0 : Math.sin(now / 3200 + index) * 0.05)
+          const x = cx + Math.cos(a) * orbR
+          const y = cy + Math.sin(a) * orbR
+          const color = agent.color || STATE_COLOR[agent.state] || STATE_COLOR.sync
+          const dim = focused && focused !== agent.id
+          context.save()
+          context.globalAlpha = dim ? 0.2 : 1
+          for (let t = 3; t >= 1; t--) {
+            const ta = a - t * 0.05
+            context.beginPath()
+            context.arc(cx + Math.cos(ta) * orbR, cy + Math.sin(ta) * orbR, 2.4 - t * 0.4, 0, Math.PI * 2)
+            context.fillStyle = color
+            context.globalAlpha = (dim ? 0.2 : 1) * (0.10 * (4 - t))
+            context.fill()
+          }
+          context.globalAlpha = dim ? 0.25 : 1
+          context.shadowColor = color
+          context.shadowBlur = 14
+          context.beginPath()
+          const size = agent.id === focused ? 6.5 : 4.6
+          for (let corner = 0; corner < 6; corner++) {
+            const ca = (corner / 6) * Math.PI * 2 + Math.PI / 6
+            const px = x + Math.cos(ca) * size
+            const py = y + Math.sin(ca) * size
+            if (corner === 0) context.moveTo(px, py)
+            else context.lineTo(px, py)
+          }
+          context.closePath()
+          context.fillStyle = color
+          context.fill()
+          context.shadowBlur = 0
+          context.fillStyle = dim ? 'rgba(170,170,170,0.5)' : 'rgba(255,255,255,0.86)'
+          context.font = '9px "JetBrains Mono", ui-monospace, monospace'
+          context.textAlign = x > cx ? 'left' : 'right'
+          const label = agent.tag + ' ' + (agent.name || '').slice(0, 14)
+          context.fillText(label, x + (x > cx ? 10 : -10), y + 3)
+          context.restore()
+        })
+
+        }
+
+        // (throughput chart moved into the bottom readout row)
+      }
+
+      /**
+       * Office floor: one isometric-ish desk per live agent. Everything on a desk is
+       * real telemetry — the monitor draws that unit's own mini chart, the lamp and
+       * screen frame carry its state, the desk bar is its context pressure, and the
+       * wall displays aggregate throughput / tool load.
+       */
+    // whale-girl agent mascot, drawn after the reference sheet:
+    // long hair + lace headdress + whale-fin ears + whale tail + navy maid dress with a whale apron.
       function drawOffice(state, now, areaW, areaH) {
         const agents = state.agents || []
         const totals = state.totals || {}
