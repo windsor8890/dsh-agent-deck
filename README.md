@@ -25,6 +25,8 @@
 
 ![鲸鱼娘 · Codex imagegen 生成的五姿势图集](docs/whale-girl-sheet-v1.jpg)
 
+![鲸鱼娘 · Codex imagegen 生成的摸鱼/打游戏动作](docs/whale-girl-actions-v1.jpg)
+
 ![办公室 · 普通窗口](docs/preview-agent-deck-compact.png)
 
 ## 舞台视图
@@ -39,16 +41,18 @@
 |---|---|
 | 显示器里的迷你图 | 该单元自己的吞吐采样 / 工具调用分桶 / 最近调用耗时（三种轮换） |
 | 屏幕读数 | 该单元缓动的**估算** tokens/s（EST） |
-| **站在桌边的鲸鱼娘** | 五张生成精灵内嵌（`assets/whale-girl-{front,happy,stand,side,rest}.png`，由本地 Codex imagegen 依据授权设定图 + 资源库 Q 版 prompt 生成；front=默认、happy=闭眼空闲、stand=举手忙碌、side=走路、rest=背面出错），每个 agent 用身份色对发色/尾鳍选择性换色；空位不出现 |
-| 鲸鱼娘 · 忙碌 | 用「举手」参考图、轻微起伏、头顶冒小火花、屏幕亮 |
-| 鲸鱼娘 · 空闲 | 用「闭眼开心」参考图、半透明、`z z` 上浮、身体轻微摇晃、屏幕只剩扫描线 |
+| **站在桌边的鲸鱼娘** | 七张生成精灵内嵌（`assets/whale-girl-{front,happy,stand,side,rest,slack,game}.png`，由本地 Codex imagegen 依据授权设定图 + 资源库 Q 版 prompt 生成；front=默认、happy=闭眼空闲、stand=举手忙碌、side=走路、rest=背面出错、slack=手机摸鱼、game=手柄打游戏），每个 agent 用身份色对发色/尾鳍选择性换色；空位不出现 |
+| 鲸鱼娘 · 忙碌 | 用「举手」生成姿势、轻微起伏、头顶冒小火花、屏幕亮 |
+| 鲸鱼娘 · 空闲 | 用「闭眼开心」生成姿势、半透明、`z z` 上浮、身体轻微摇晃、屏幕只剩扫描线 |
 | 鲸鱼娘 · 出错 | 用「背面」生成姿势、头顶红色 `!` 闪烁、屏幕红框闪烁 |
 | 桌面板名牌 | `#01 96.5` + `WORKING / IDLE / ERROR` |
 | 桌角状态灯 | RUN 青 / WAIT 黄 / ERR 红 / SYNC 灰 |
-| 鲸鱼娘 · 走动 | 用「侧身」参考图，在工位间串访时脚步弹跳、方向自动镜像，身后带扬尘 |
+| 鲸鱼娘 · 走动 | 用「侧身」生成姿势，在工位间串访时脚步弹跳、方向自动镜像，身后带扬尘 |
 | 鲸鱼娘 · 交谈 | 到达同事桌边后面向对方、轻微点头；头顶气泡轮播 `… / ? / ! / ♪`，父子 agent 显示 `DELEGATE` |
+| 鲸鱼娘 · 摸鱼 | 用「手机摸鱼」生成姿势、身体轻晃、头顶 `…` 漂浮；约每 50–140s 触发一次，持续 6–13s |
+| 鲸鱼娘 · 打游戏 | 用「手柄」生成姿势、兴奋弹跳、头顶 `♪` 漂浮；与摸鱼共用同一套冷却 |
 
-**鲸鱼娘会动**：待机呼吸、工作时轻微起伏、出错抖动、串访时用侧面姿态在工位间走动；到达后发出 `CHATTING` / `VISITING` 桌牌，聊一会儿再走回自己的工位。来自委派拓扑的父子 agent 优先串访（气泡显示 `DELEGATE`），普通同事之间随机串访。**同时最多可有三位访客**（按在场座位数自适应，访客与目标不会重复占用同一单元），`prefers-reduced-motion` 下关闭串访与额外动效。
+**鲸鱼娘会动**：待机呼吸、工作时轻微起伏、出错抖动、串访时用侧面姿态在工位间走动；到达后发出 `CHATTING` / `VISITING` 桌牌，聊一会儿再走回自己的工位。来自委派拓扑的父子 agent 优先串访（气泡显示 `DELEGATE`），普通同事之间随机串访。**同时最多可有两位访客**，串访频率降到约每 9–25s 一次；另外每位单元约每 50–140s 会摸鱼/打游戏 6–13s。`prefers-reduced-motion` 下关闭串访、摸鱼/游戏与额外动效。
 **点任意工位即可聚焦**（等于点 TUI 卡）。舞台最下方是**横排的四块读数面板**：
 AGGREGATE·THROUGHPUT（含吞吐曲线，标 `EST`）、UNITS（`n / 8 DESKS`，溢出时 `+N STANDBY`）、TOOL MIX·60s、RECENT CALLS。
 原来那条独立图表带已并入 AGGREGATE 面板。
@@ -195,7 +199,8 @@ RADAR/NET 仍走整体反相；鲸鱼娘精灵在画布内做反向滤波以保�
 鲸鱼娘精灵图由本地 Codex 的 imagegen 工具生成：以社区「[鲸鱼娘开源资产库](https://github.com/TreapGoGo/deepseek-whale-girl)」
 的 Q 版三视图（插件作者已授权）作为角色一致性参考，并使用资源库的 Q 版 prompt（CC BY-SA 4.0）作为角色描述。
 生成图集保存在 `docs/whale-girl-sheet-v1.jpg`，实际生图 prompt 保存在 `docs/whale-girl-image-prompt.txt`；
-切好的五张透明 PNG 在 `assets/` 并内嵌到 `client.js`。资源库 README 明确设定图本身不在其 MIT/CC BY-SA 代码许可内，
+摸鱼/打游戏两姿势的图集与 prompt 分别在 `docs/whale-girl-actions-v1.jpg`、`docs/whale-girl-actions-prompt.txt`。
+切好的七张透明 PNG 在 `assets/` 并内嵌到 `client.js`。资源库 README 明确设定图本身不在其 MIT/CC BY-SA 代码许可内，
 二次使用请继续遵守原作者授权；生成图沿用该社区角色形象，仅供本项目使用。
 
 ## 质量记录
@@ -224,8 +229,9 @@ RADAR/NET 仍走整体反相；鲸鱼娘精灵在画布内做反向滤波以保�
   浅色主题由深色画面反相派生，空位 `VACANT` 等弱对比小字比深色更淡；浅色靠根元素 CSS filter 实现，
   画布 60fps 下的合成开销未做定量测量；工位稳定映射与 `STANDBY` 溢出目前只有静态复核与双会话手测，
   ≥9 会话同时运行、3 分钟回收后的席位重分配尚未运行复现；鲸鱼娘动画为程序化（呼吸/弹跳/点头/镜面侧身），
-  不是逐帧序列动画；角色精灵由本地 Codex imagegen 生成（5 姿势），不是逐帧动图资产；
-  串访是视觉模拟，不读取真实对话内容，父子优先关系来自 `parentId` 拓扑；
+  不是逐帧序列动画；角色精灵由本地 Codex imagegen 生成（7 姿势），不是逐帧动图资产；
+  串访是视觉模拟，不读取真实对话内容，父子优先关系来自 `parentId` 拓扑；摸鱼/打游戏也只改变办公室里的
+  姿势，不改变 agent 的真实运行状态；
   `prefers-reduced-motion` 在启动时采样（运行中切换 OS 设置需刷新页面）；RADAR/NET 不做浅色单独调色。
 
 ## 文件
@@ -238,9 +244,11 @@ client.js           全部 UI 与遥测折叠（单文件、无构建）
 locale/en.json      插件页显示元数据
 locale/zh.json
 icon.svg            插件图标
-assets/whale-girl-{front,happy,stand,side,rest}.png  鲸鱼娘五姿势生成精灵（client.js 内嵌 base64 副本）
+assets/whale-girl-{front,happy,stand,side,rest,slack,game}.png  鲸鱼娘七姿势生成精灵（client.js 内嵌 base64 副本）
 docs/whale-girl-sheet-v1.jpg        Codex imagegen 生成的原始图集（5 姿势）
 docs/whale-girl-image-prompt.txt    实际生成时使用的 prompt
+docs/whale-girl-actions-v1.jpg      Codex imagegen 生成的摸鱼/打游戏图集
+docs/whale-girl-actions-prompt.txt  动作图集实际使用的 prompt
 docs/preview-*.png,jpg        历史截图与配色重映射预览（详见“截图”一节）
 ```
 
