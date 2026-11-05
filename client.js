@@ -1316,13 +1316,13 @@ window.__ModuleLoader__.load({
 .nxt-standby span{font-size:10px; color:#555555; line-height:1.6}
 .nxt-resident{cursor:default; border-left-color:rgba(255,255,85,0.45)}
 .nxt-resident:hover{border-left-color:rgba(255,255,85,0.45); background:linear-gradient(180deg, rgba(10,10,10,0.94), rgba(0,0,0,0.94))}
-.nxt-resident-art{flex:1 1 0; min-height:96px; display:flex; align-items:center; justify-content:center; overflow:hidden}
-.nxt-resident-img{height:min(160px, 100%); max-width:100%; object-fit:contain; image-rendering:auto;
-  filter:drop-shadow(0 0 9px rgba(85,255,255,0.18))}
-/* The root light theme inverts all DOM; counter-invert the resident image so it
-   keeps the same palette as the canvas sprites. */
-.nxt-root.nxt-light .nxt-resident-img{filter:invert(1) hue-rotate(180deg) drop-shadow(0 0 9px rgba(85,255,255,0.18))}
-.nxt-resident .nxt-think{font-size:9px}
+.nxt-resident-term{flex:1 1 0; min-height:96px; display:flex; flex-direction:column; gap:4px; margin:8px 0 2px; padding:8px;
+  overflow:hidden; background:rgba(0,0,0,0.55); border:1px solid rgba(85,255,255,0.18);
+  font:10px/1.6 "JetBrains Mono","Cascadia Mono",Consolas,monospace; color:#aaaaaa}
+.nxt-resident-line{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.nxt-resident-prompt{color:#55ffff}
+.nxt-resident-cursor{display:inline-block; margin-left:2px; color:#ffff55; animation:nxt-blink 1.1s steps(2,end) infinite}
+.nxt-resident-term-hint{margin-top:auto; color:#555555; font-size:8px; letter-spacing:.12em}
 .nxt-resident-hint{font-size:8px; color:#555555; text-align:center; padding-top:3px; flex:none}
 .nxt-resident .nxt-standby{padding:8px 4px 2px}
 .nxt-resident .nxt-standby b{font-size:9px; letter-spacing:.2em}
@@ -1767,9 +1767,13 @@ window.__ModuleLoader__.load({
         '<div class="nxt-chead"><span class="nxt-cidx">#00</span><span class="nxt-cname">WHALE-GIRL</span>' +
         '<span class="nxt-cstate">IDLE</span></div>' +
         '<div class="nxt-cmeta"><span class="nxt-leader"><span>MODEL</span><i></i><b>resident</b></span><span>NO SESSION</span></div>' +
-        '<div class="nxt-resident-art"><img class="nxt-resident-img" alt="" src="' + GIRL_HAPPY_SRC + '"></div>' +
-        '<div class="nxt-sec"><span class="nxt-lbl">THINK</span>' +
-        '<div class="nxt-think nxt-stream"><em class="nxt-dim">no active sessions — keeping the floor warm.</em></div></div>' +
+        '<div class="nxt-resident-term">' +
+        '<div class="nxt-resident-line nxt-resident-prompt">$ watchtower --standby</div>' +
+        '<div class="nxt-resident-line">&gt; 0 active sessions</div>' +
+        '<div class="nxt-resident-line">&gt; resident #00 on floor</div>' +
+        '<div class="nxt-resident-line">&gt; waiting for agents<span class="nxt-resident-cursor">_</span></div>' +
+        '<div class="nxt-resident-term-hint">NO SESSION TELEMETRY</div>' +
+        '</div>' +
         '<div class="nxt-resident-hint">resident standby · host idle</div>' +
         '</div>' +
         '<div class="nxt-standby"><b>NO ACTIVE SESSIONS</b>' +
