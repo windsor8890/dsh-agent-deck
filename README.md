@@ -27,11 +27,7 @@ Agent Deck 是 DSH Web GUI 的只读多智能体监控面板：把每个正在�
 
 要求：已安装带插件能力的 DSH（使用 Web GUI）。
 
-### 方式一：DSH 插件管理（推荐）
-
-在 DSH 的「插件」页面选择本地安装/从目录安装，选中本仓库目录，刷新页面。
-
-### 方式二：DSH CLI
+### DSH CLI
 
 ```bash
 dsh plugin --profile <profile> add <本仓库绝对路径>
@@ -48,3 +44,23 @@ dsh plugin --profile desktop add /path/to/dsh-agent-deck
 ```
 
 无需 `npm install` 或构建步骤；安装后刷新 Web GUI 即生效。
+
+### 让 agent 自行安装
+
+把下面这段提示词发给任意能在本机执行命令的 agent：
+
+```text
+请在本机安装 DSH Agent Deck 插件。
+
+1. 如果本机还没有仓库，先克隆：
+   git clone https://github.com/windsor8890/dsh-agent-deck.git
+   如果已有本地目录，直接使用该绝对路径。
+2. 用仓库绝对路径安装到当前 DSH profile：
+   dsh plugin --profile <profile> add <仓库绝对路径>
+   - 不知道 profile 时先确认当前使用的 profile（通常是 desktop）。
+   - 如果 dsh 不在 PATH，改用 DSH 安装目录下的 CLI，例如：
+     Windows: "D:\Program Files\dsh\resources\runtime\cli\bin\dsh.cmd"
+3. 刷新 DSH Web GUI，在左侧打开「监控室」，确认 Agent Deck 面板出现。
+
+不要修改仓库源码；完成后报告使用的 profile、安装路径和验证结果。
+```
