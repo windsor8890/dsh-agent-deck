@@ -8,6 +8,20 @@
 
 ![Agent Deck — dark mode](docs/screenshot-dark.jpg)
 
+## Whale-girl
+
+Our DIY whale-girl is generated with the local Codex imagegen; seven state poses (source sheets and prompts live under `docs/`):
+
+| State | Pose | Meaning |
+|---|---|---|
+| `front` | <img src="assets/whale-girl-front.webp" width="96" alt="front"> | Default / talking |
+| `happy` | <img src="assets/whale-girl-happy.webp" width="96" alt="happy"> | Idle, eyes closed / retained session |
+| `stand` | <img src="assets/whale-girl-stand.webp" width="96" alt="stand"> | Working (arms up) |
+| `side` | <img src="assets/whale-girl-side.webp" width="96" alt="side"> | Walking / visiting |
+| `slack` | <img src="assets/whale-girl-slack.webp" width="96" alt="slack"> | Slacking / waiting for a human (phone) |
+| `game` | <img src="assets/whale-girl-game.webp" width="96" alt="game"> | Idle wait (handheld game) |
+| `rest` | <img src="assets/whale-girl-rest.webp" width="96" alt="rest"> | Error / turned away |
+
 ## About
 
 Agent Deck is a read-only multi-agent telemetry console for the DSH Web GUI. It turns each running session into an office desk and a whale-girl, showing live status, thinking, tool calls, output, context usage and throughput, with OFFICE / RADAR / NET stages and a single-agent ANALYZE view. It only reads Host session telemetry and never writes back to a session.

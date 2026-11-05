@@ -8,6 +8,20 @@
 
 ![Agent Deck 深色模式](docs/screenshot-dark.jpg)
 
+## 鲸鱼娘形象
+
+DIY 鲸鱼娘由本地 Codex imagegen 生成，共 7 个状态姿势（源图集与 prompt 见 `docs/`）：
+
+| 状态 | 形象 | 说明 |
+|---|---|---|
+| `front` | <img src="assets/whale-girl-front.webp" width="96" alt="front"> | 默认 / 交谈 |
+| `happy` | <img src="assets/whale-girl-happy.webp" width="96" alt="happy"> | 空闲闭眼 / 保留期 |
+| `stand` | <img src="assets/whale-girl-stand.webp" width="96" alt="stand"> | 工作中（举手） |
+| `side` | <img src="assets/whale-girl-side.webp" width="96" alt="side"> | 走路 / 串访 |
+| `slack` | <img src="assets/whale-girl-slack.webp" width="96" alt="slack"> | 摸鱼 / 等待人工（手机） |
+| `game` | <img src="assets/whale-girl-game.webp" width="96" alt="game"> | 空闲等待（手柄） |
+| `rest` | <img src="assets/whale-girl-rest.webp" width="96" alt="rest"> | 出错 / 背对 |
+
 ## 简介
 
 Agent Deck 是 DSH Web GUI 的只读多智能体监控面板：把每个正在运行的会话画成办公室工位和鲸鱼娘，实时汇总状态、思考、工具调用、输出、上下文与吞吐，并提供 OFFICE / RADAR / NET 三种舞台和单 agent 的 ANALYZE 解剖视图。它只读取 Host 的会话遥测，不向会话写回任何内容。
