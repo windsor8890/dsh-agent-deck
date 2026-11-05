@@ -1,6 +1,6 @@
 # dsh-agent-deck
 
-English · [中文](README.md)
+[简体中文](README.md) | **English**
 
 ## Screenshots
 
