@@ -35,6 +35,33 @@ window.__ModuleLoader__.load({
     const MAX_PHASES = 420
     const MAX_FILES = 40
     const LOG_CAP = 40
+    // Owner-tunable behaviours persisted per browser. Visits and desk actions are
+    // cosmetic; changing them never writes anything back to the Host.
+    const PREFS_KEY = 'agent-deck:prefs:v1'
+    const DEFAULT_PREFS = { visits: true, visitPace: 'chill', maxVisitors: 2, actions: true }
+    const VISIT_PACE_MULT = { chill: 1.5, normal: 1, lively: 0.65 }
+    function loadPrefs() {
+      try {
+        const raw = window.localStorage.getItem(PREFS_KEY)
+        if (!raw) return { ...DEFAULT_PREFS }
+        const parsed = JSON.parse(raw)
+        return {
+          visits: parsed.visits !== false,
+          visitPace: parsed.visitPace === 'normal' || parsed.visitPace === 'lively' ? parsed.visitPace : 'chill',
+          maxVisitors: parsed.maxVisitors === 1 ? 1 : 2,
+          actions: parsed.actions !== false,
+        }
+      } catch (err) {
+        return { ...DEFAULT_PREFS }
+      }
+    }
+    function savePrefs(prefs) {
+      try {
+        window.localStorage.setItem(PREFS_KEY, JSON.stringify(prefs))
+      } catch (err) {
+        /* private mode / storage disabled: keep the in-memory value */
+      }
+    }
 
     const DICT = {
       zh: {
@@ -668,6 +695,7 @@ window.__ModuleLoader__.load({
           origin: (rec.row && rec.row.origin) || '',
           state: rec.idleSince ? 'wait' : agentState(rec),
           held: Boolean(rec.idleSince),
+          pending: Boolean(pendingOf(rec.id)),
           model: fold.model || '',
           turn: fold.turn || 0,
           step: fold.step || 0,
@@ -1414,6 +1442,20 @@ window.__ModuleLoader__.load({
   color:#000000; background:#ffff55; border:1px solid #ffff55; border-radius:0}
 .nxt-analyze-close:focus-visible{outline:1px solid #ffffff; outline-offset:1px}
 .nxt-analyze-close:hover{background:#ffffff; border-color:#ffffff}
+.nxt-prefs{display:none; position:absolute; top:36px; right:8px; z-index:9; width:242px; padding:8px;
+  flex-direction:column; gap:7px; background:rgba(0,0,0,0.94); border:1px solid rgba(85,255,255,0.4);
+  box-shadow:0 0 18px rgba(0,0,0,0.55); font:8px/1.3 "JetBrains Mono","Cascadia Mono",Consolas,monospace; color:#aaaaaa}
+.nxt-prefs[data-open="1"]{display:flex}
+.nxt-prefs-h{display:flex; align-items:center; justify-content:space-between; color:var(--nxt-cy); letter-spacing:.14em}
+.nxt-prefs-x{cursor:pointer; color:#aaaaaa; background:transparent; border:0; font:600 12px/1 "JetBrains Mono",monospace; padding:0 2px}
+.nxt-prefs-x:hover{color:#ffff55}
+.nxt-pref-row{display:flex; align-items:center; justify-content:space-between; gap:8px}
+.nxt-pref-seg{display:flex; gap:3px; flex:none}
+.nxt-pref-btn{cursor:pointer; padding:3px 5px; border:1px solid rgba(85,255,255,0.22); background:rgba(10,10,10,0.7);
+  color:#aaaaaa; font:600 8px/1 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.08em; border-radius:0}
+.nxt-pref-btn:hover{color:#ffff55; border-color:rgba(255,255,85,0.5)}
+.nxt-pref-btn[data-active="1"]{color:#000000; background:#ffff55; border-color:#ffff55}
+.nxt-pref-note{color:rgba(170,170,170,0.7); line-height:1.5; border-top:1px solid rgba(85,255,255,0.12); padding-top:6px}
 .nxt-stage.nxt-analyze-on .nxt-analyze{display:grid}
 .nxt-stage.nxt-analyze-on canvas{display:none}
 .nxt-stage.nxt-analyze-on .nxt-legend{display:none}
@@ -1507,11 +1549,13 @@ window.__ModuleLoader__.load({
           <button type="button" class="nxt-mode" data-mode="radar" title="Reactor radar">RADAR</button>
           <button type="button" class="nxt-mode" data-mode="net" title="Network view">NET</button>
           <button type="button" class="nxt-mode" data-cinema="1" title="Cinema layout (C)">CINEMA</button>
+          <button type="button" class="nxt-mode" data-prefs="1" title="Office preferences">PREFS</button>
         </div>
       </div>
       <div class="nxt-stage" id="nxt-stage">
         <canvas id="nxt-canvas"></canvas>
         <div class="nxt-analyze" id="nxt-analyze"></div>
+        <div class="nxt-prefs" id="nxt-prefs" data-open="0"></div>
         <div class="nxt-stage-hud" id="nxt-stage-hud">
           <div class="nxt-shud" data-pos="tl" id="nxt-shud-tl"></div>
           <div class="nxt-shud" data-pos="tr" id="nxt-shud-tr"></div>
@@ -1875,6 +1919,33 @@ window.__ModuleLoader__.load({
       )
     }
 
+    function prefsSegment(key, value, options) {
+      return (
+        '<div class="nxt-pref-seg">' +
+        options
+          .map(
+            ([optionValue, label]) =>
+              '<button type="button" class="nxt-pref-btn" data-pref="' + key + '" data-pref-val="' + optionValue + '"' +
+              (String(value) === String(optionValue) ? ' data-active="1"' : '') + '>' + label + '</button>',
+          )
+          .join('') +
+        '</div>'
+      )
+    }
+    function prefsHtml(prefs) {
+      const row = (label, control) =>
+        '<div class="nxt-pref-row"><span>' + label + '</span>' + control + '</div>'
+      return (
+        '<div class="nxt-prefs-h"><span>OFFICE PREFS</span>' +
+        '<button type="button" class="nxt-prefs-x" data-prefs-close="1" title="Close settings">×</button></div>' +
+        row('VISITS', prefsSegment('visits', prefs.visits ? 1 : 0, [[1, 'ON'], [0, 'OFF']])) +
+        row('VISIT PACE', prefsSegment('visitPace', prefs.visitPace, [['chill', 'CHILL'], ['normal', 'NORMAL'], ['lively', 'LIVELY']])) +
+        row('MAX VISITORS', prefsSegment('maxVisitors', prefs.maxVisitors, [[1, '1'], [2, '2']])) +
+        row('DESK ACTIONS', prefsSegment('actions', prefs.actions ? 1 : 0, [[1, 'ON'], [0, 'OFF']])) +
+        '<div class="nxt-pref-note">Visits and desk actions are cosmetic and never write to the Host. Saved locally in this browser; theme follows DSH appearance.</div>'
+      )
+    }
+
     function fmtMs(ms) {
       const value = Number(ms) || 0
       if (value <= 0) return ''
@@ -2148,9 +2219,8 @@ window.__ModuleLoader__.load({
           codeLine('desks', String(DESK_COUNT), '# fixed seats') +
           codeLine('visit_travel', '1200-3000ms', '# per visit') +
           codeLine('visit_chat', '2800-4600ms', '# per visit') +
-          codeLine('visits', '1-2', '# on floor') +
-          codeLine('break', '6-13s', '# slack/game') +
-          codeLine('break_gap', '50-140s', '# cooldown') +
+          codeLine('visits', '1-2', '# prefs') +
+          codeLine('actions', 'waiting', '# phone/game') +
           codeLine('retain_source', 'watchtower', '# read-only') +
           codeLine('palette', 'IBM 5153', '# 16 colors') +
           '</div>' +
@@ -3196,9 +3266,6 @@ window.__ModuleLoader__.load({
       // own walk/chat timeline and occupancy is tracked per visit.
       let officeVisits = []
       let officeNextVisitAt = 0
-      // Occasional desk breaks: one agent at a time idles with a phone or a
-      // handheld game, then returns to her actual work after a short while.
-      const officeBreaks = new Map()
       const history = []
       let lastSample = 0
       let lastWave = 0
@@ -3952,10 +4019,22 @@ window.__ModuleLoader__.load({
         const seatedAll = spotBySlot.filter((spot) => spot.agent)
         const runningAll = seatedAll.filter((spot) => spot.agent.state === 'run')
         const currentById = new Map(seatedAll.map((spot) => [spot.agent.id, spot]))
-        // Several visitors can share the floor: visits are staggered, and a unit
-        // never takes part in two visits at once (neither as visitor nor target).
-        const MAX_VISITS = Math.max(1, Math.min(2, Math.floor(seatedAll.length / 2) || 1))
-        if (officeNextVisitAt === 0) officeNextVisitAt = now + 8000 + Math.random() * 12000
+        const prefs = state.prefs || DEFAULT_PREFS
+        const visitPace = VISIT_PACE_MULT[prefs.visitPace] || 1
+        const visitEnabled = prefs.visits !== false && !reduceMotion
+        const visitLimit = visitEnabled
+          ? Math.max(1, Math.min(prefs.maxVisitors === 1 ? 1 : 2, Math.floor(seatedAll.length / 2) || 1))
+          : 0
+        // Desk actions follow the real session state: pending interaction -> phone,
+        // running-but-idle (WAIT) -> phone/handheld game, held (3-min retention) stays
+        // asleep. No random break timer, so the pose always has a visible reason.
+        const actionForAgent = (agent) => {
+          if (reduceMotion || prefs.actions === false || agent.held || agent.state !== 'wait') return ''
+          if (agent.pending) return 'slack'
+          const slot = Number.isInteger(agent.deskSlot) && agent.deskSlot >= 0 ? agent.deskSlot : 0
+          return Math.floor(Date.now() / 24000 + slot) % 2 === 0 ? 'slack' : 'game'
+        }
+        if (visitEnabled && officeNextVisitAt === 0) officeNextVisitAt = now + (8000 + Math.random() * 12000) * visitPace
         officeVisits = officeVisits.filter((visit) => {
           const fromSpot = currentById.get(visit.fromId)
           const toSpot = currentById.get(visit.toId)
@@ -3972,45 +4051,13 @@ window.__ModuleLoader__.load({
           busyIds.add(visit.fromId)
           busyIds.add(visit.toId)
         }
-        // Desk-break state machine: schedule an occasional 6-13s break, then wait
-        // 50-140s before that unit can slack off again. Breaks never interrupt a
-        // visit and never take part in one, so the two animations cannot overlap.
-        for (const id of Array.from(officeBreaks.keys())) {
-          if (!currentById.has(id)) officeBreaks.delete(id)
-        }
-        const breakIds = new Set()
-        for (const spot of seatedAll) {
-          const agent = spot.agent
-          let brk = officeBreaks.get(agent.id)
-          if (!brk) {
-            brk = { mode: '', until: 0, nextAt: now + 12000 + Math.random() * 35000 }
-            officeBreaks.set(agent.id, brk)
-          }
-          if (brk.until && now >= brk.until) {
-            brk.mode = ''
-            brk.until = 0
-            brk.nextAt = now + 50000 + Math.random() * 90000
-          }
-          if (
-            !reduceMotion &&
-            !brk.until &&
-            now >= brk.nextAt &&
-            !busyIds.has(agent.id) &&
-            agent.state !== 'err'
-          ) {
-            brk.mode = Math.random() < 0.5 ? 'slack' : 'game'
-            brk.until = now + 6000 + Math.random() * 7000
-          }
-          if (brk.until > now) breakIds.add(agent.id)
-        }
-        const breakById = new Map()
-        for (const id of breakIds) breakById.set(id, officeBreaks.get(id).mode)
-        if (!reduceMotion && officeVisits.length >= MAX_VISITS && now >= officeNextVisitAt) {
-          officeNextVisitAt = now + 5000 + Math.random() * 8000
+        if (visitEnabled && officeVisits.length >= visitLimit && now >= officeNextVisitAt) {
+          officeNextVisitAt = now + (5000 + Math.random() * 8000) * visitPace
         }
         if (
-          !reduceMotion &&
-          officeVisits.length < MAX_VISITS &&
+          visitEnabled &&
+          visitLimit > 0 &&
+          officeVisits.length < visitLimit &&
           now >= officeNextVisitAt &&
           seatedAll.length >= 2 &&
           runningAll.length >= 1
@@ -4033,14 +4080,13 @@ window.__ModuleLoader__.load({
             if (busyIds.has(parent.agent.id) || busyIds.has(child.agent.id)) continue
             if (tooClose(parent) || tooClose(child)) continue
             if (parent.agent.state !== 'run' && child.agent.state !== 'run') continue
-            if (breakIds.has(parent.agent.id) || breakIds.has(child.agent.id)) continue
             pairs.push({ parent, child, delegation: true, weight: 3 })
           }
           if (pairs.length === 0) {
             for (const a of runningAll) {
-              if (busyIds.has(a.agent.id) || tooClose(a) || breakIds.has(a.agent.id)) continue
+              if (busyIds.has(a.agent.id) || tooClose(a)) continue
               for (const b of seatedAll) {
-                if (a.slot === b.slot || busyIds.has(b.agent.id) || tooClose(b) || breakIds.has(b.agent.id)) continue
+                if (a.slot === b.slot || busyIds.has(b.agent.id) || tooClose(b)) continue
                 if (b.agent.state === 'run' || Math.random() < 0.3) {
                   pairs.push({ from: a, to: b, delegation: false, weight: 1 })
                 }
@@ -4088,9 +4134,9 @@ window.__ModuleLoader__.load({
               flip: false,
               alpha: 0,
             })
-            officeNextVisitAt = now + 9000 + Math.random() * 16000
+            officeNextVisitAt = now + (9000 + Math.random() * 16000) * visitPace
           } else {
-            officeNextVisitAt = now + 8000 + Math.random() * 12000
+            officeNextVisitAt = now + (8000 + Math.random() * 12000) * visitPace
           }
         }
 
@@ -4160,7 +4206,7 @@ window.__ModuleLoader__.load({
           const color = vacant ? '#555555' : agent.color || '#55ffff'
           const state = vacant ? 'vacant' : agent.state
           const chatVisit = vacant ? null : chatTargets.get(agent.id)
-          const breakMode = vacant || state === 'err' ? '' : breakById.get(agent.id) || ''
+          const waitAction = vacant ? '' : actionForAgent(agent)
           const baseMode = vacant ? 'vacant' : state === 'err' ? 'error' : state === 'wait' ? 'idle' : state === 'run' ? 'busy' : 'idle'
           const mode = vacant
             ? 'vacant'
@@ -4168,7 +4214,7 @@ window.__ModuleLoader__.load({
               ? 'away'
               : chatVisit && state !== 'err'
                 ? 'talk'
-                : breakMode || baseMode
+                : waitAction || baseMode
           const edge = hexA(color, vacant ? 0.15 : 0.55)
 
           // chair behind the desk
@@ -4817,6 +4863,8 @@ window.__ModuleLoader__.load({
       const focusRef = useRef(null)
       const modeRef = useRef('office')
       const cinemaRef = useRef(false)
+      const prefsRef = useRef(loadPrefs())
+      const prefsOpenRef = useRef(false)
       const stageStateRef = useRef({
         agents: [],
         totals: { tps: 0 },
@@ -4824,6 +4872,7 @@ window.__ModuleLoader__.load({
         mode: 'office',
         hidden: false,
         topology: { nodes: [], edges: [] },
+        prefs: prefsRef.current,
       })
       const lastRevRef = useRef(-1)
 
@@ -4850,6 +4899,7 @@ window.__ModuleLoader__.load({
           ticker: $('nxt-ticker'),
           stage: $('nxt-stage'),
           analyze: $('nxt-analyze'),
+          prefs: $('nxt-prefs'),
           hudTL: $('nxt-shud-tl'),
           hudTR: $('nxt-shud-tr'),
           hudBL: $('nxt-shud-bl'),
@@ -4947,6 +4997,11 @@ window.__ModuleLoader__.load({
           if (refs.stage) refs.stage.classList.toggle('nxt-hud-off', !hudOn)
           root.classList.toggle('nxt-focus-on', Boolean(focusedAgent))
           setHtml(refs.analyze, focusedAgent ? analyzeHtml(focusedAgent) : '')
+          const prefs = prefsRef.current
+          if (refs.prefs) {
+            refs.prefs.dataset.open = prefsOpenRef.current ? '1' : '0'
+            if (prefsOpenRef.current) setHtml(refs.prefs, prefsHtml(prefs))
+          }
           if (!focusedAgent) {
             const hud = stageHudHtml(view)
             setHtml(refs.hudTL, hud.tl)
@@ -5018,6 +5073,7 @@ window.__ModuleLoader__.load({
             toolBins: view.toolBins || [],
             history: view.history || [],
             toolStats: view.toolStats || [],
+            prefs,
           }
         }
 
@@ -5068,6 +5124,30 @@ window.__ModuleLoader__.load({
             setCinema(!cinemaRef.current)
             return
           }
+          if (target.closest('[data-prefs]')) {
+            prefsOpenRef.current = !prefsOpenRef.current
+            paint()
+            return
+          }
+          if (target.closest('[data-prefs-close]')) {
+            prefsOpenRef.current = false
+            paint()
+            return
+          }
+          const prefButton = target.closest('[data-pref]')
+          if (prefButton) {
+            const key = prefButton.getAttribute('data-pref')
+            const raw = prefButton.getAttribute('data-pref-val')
+            const next = { ...prefsRef.current }
+            if (key === 'visits') next.visits = raw === '1'
+            else if (key === 'actions') next.actions = raw === '1'
+            else if (key === 'visitPace') next.visitPace = raw
+            else if (key === 'maxVisitors') next.maxVisitors = raw === '1' ? 1 : 2
+            prefsRef.current = next
+            savePrefs(next)
+            paint()
+            return
+          }
           if (target.closest('[data-focus-release]')) {
             focusRef.current = null
             paint()
@@ -5099,6 +5179,12 @@ window.__ModuleLoader__.load({
           const target = event.target
           if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return
           if (event.key === 'Escape') {
+            if (prefsOpenRef.current) {
+              event.preventDefault()
+              prefsOpenRef.current = false
+              paint()
+              return
+            }
             if (focusRef.current) {
               event.preventDefault()
               focusRef.current = null
