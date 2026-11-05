@@ -44,6 +44,7 @@ function sha256(buffer) {
 
 const client = read('client.js')
 const readme = read('README.md')
+const readmeEn = read('README.en.md')
 const pkg = JSON.parse(read('package.json'))
 const ASSET_NAMES = ['front', 'happy', 'stand', 'side', 'rest', 'slack', 'game']
 
@@ -181,7 +182,10 @@ check('all $(\'id\') lookups exist in the template', () => {
 })
 check('README local asset/doc references exist', () => {
   const refs = new Set()
-  for (const match of readme.matchAll(/(?:docs|assets)\/[A-Za-z0-9_./-]+\.[A-Za-z0-9]+/g)) refs.add(match[0])
+  for (const [name, text] of [['README.md', readme], ['README.en.md', readmeEn]]) {
+    for (const match of text.matchAll(/(?:docs|assets)\/[A-Za-z0-9_./-]+\.[A-Za-z0-9]+/g)) refs.add(match[0])
+    assert(text.includes('README'), name + ' must link the other language README')
+  }
   for (const ref of refs) assert(fs.existsSync(path.join(root, ref)), 'README references missing file: ' + ref)
   return refs.size + ' refs'
 })
@@ -190,6 +194,7 @@ check('package files cover runtime assets', () => {
   assert(entries.includes('client.js'), 'client.js missing from package files')
   assert(entries.includes('assets/*.webp'), 'assets/*.webp missing from package files')
   assert(entries.includes('README.md'), 'README.md missing from package files')
+  assert(entries.includes('README.en.md'), 'README.en.md missing from package files')
   return entries.length + ' entries'
 })
 check('no test/debug leftovers in production client', () => {

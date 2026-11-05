@@ -17,6 +17,7 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
+    "README.en.md",
     "assets/*.webp"
   ],
   "dsh": {
