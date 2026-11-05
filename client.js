@@ -1319,7 +1319,9 @@ window.__ModuleLoader__.load({
 .nxt-resident-term{flex:1 1 0; min-height:96px; display:flex; flex-direction:column; gap:4px; margin:8px 0 2px; padding:8px;
   overflow:hidden; background:rgba(0,0,0,0.55); border:1px solid rgba(85,255,255,0.18);
   font:10px/1.6 "JetBrains Mono","Cascadia Mono",Consolas,monospace; color:#aaaaaa}
-.nxt-resident-line{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.nxt-resident-line{display:flex; gap:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.nxt-resident-key{flex:0 0 52px; color:#555555}
+.nxt-resident-val{color:#55ffff; overflow:hidden; text-overflow:ellipsis}
 .nxt-resident-prompt{color:#55ffff}
 .nxt-resident-cursor{display:inline-block; margin-left:2px; color:#ffff55; animation:nxt-blink 1.1s steps(2,end) infinite}
 .nxt-resident-term-hint{margin-top:auto; color:#555555; font-size:8px; letter-spacing:.12em}
@@ -1761,7 +1763,14 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function standbyHtml() {
+    function standbyHtml(view, prefs) {
+      const agents = (view && view.agents) || []
+      const held = agents.filter((agent) => agent.held).length
+      const seated = (view && view.totals && view.totals.desks) || 0
+      const visitMode = prefs && prefs.visits === false ? 'off' : (prefs && prefs.visitPace) || 'chill'
+      const visitMax = prefs && prefs.maxVisitors === 1 ? 1 : 2
+      const actions = prefs && prefs.actions === false ? 'off' : 'on'
+      const theme = activeScheme === 'light' ? 'light' : 'dark'
       return (
         '<div class="nxt-card nxt-resident" data-state="wait" title="Resident whale-girl — no active sessions">' +
         '<div class="nxt-chead"><span class="nxt-cidx">#00</span><span class="nxt-cname">WHALE-GIRL</span>' +
@@ -1769,9 +1778,14 @@ window.__ModuleLoader__.load({
         '<div class="nxt-cmeta"><span class="nxt-leader"><span>MODEL</span><i></i><b>resident</b></span><span>NO SESSION</span></div>' +
         '<div class="nxt-resident-term">' +
         '<div class="nxt-resident-line nxt-resident-prompt">$ watchtower --standby</div>' +
-        '<div class="nxt-resident-line">&gt; 0 active sessions</div>' +
-        '<div class="nxt-resident-line">&gt; resident #00 on floor</div>' +
-        '<div class="nxt-resident-line">&gt; waiting for agents<span class="nxt-resident-cursor">_</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">host</span><span class="nxt-resident-val">DSH · connected</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">theme</span><span class="nxt-resident-val">' + theme + ' · host</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">sessions</span><span class="nxt-resident-val">0 live · ' + held + ' held</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">desks</span><span class="nxt-resident-val">' + seated + '/8 seated</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">visits</span><span class="nxt-resident-val">' + visitMode + ' · max ' + visitMax + '</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">actions</span><span class="nxt-resident-val">' + actions + '</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">mode</span><span class="nxt-resident-val">read-only</span></div>' +
+        '<div class="nxt-resident-line"><span class="nxt-resident-key">watch</span><span class="nxt-resident-val">awaiting a session<span class="nxt-resident-cursor">_</span></span></div>' +
         '<div class="nxt-resident-term-hint">NO SESSION TELEMETRY</div>' +
         '</div>' +
         '<div class="nxt-resident-hint">resident standby · host idle</div>' +
@@ -5028,11 +5042,12 @@ window.__ModuleLoader__.load({
             refs.alertChip.className = 'nxt-chip' + (bad ? ' nxt-bad' : '')
           }
           const liveAgents = view.agents.filter((agent) => !agent.held)
+          const prefs = prefsRef.current
           setHtml(
             refs.wall,
             liveAgents.length > 0
               ? liveAgents.slice(0, MAX_CARDS).map((agent) => cardHtml(agent, focusRef.current)).join('')
-              : standbyHtml(),
+              : standbyHtml(view, prefs),
           )
           if (refs.wallHint) {
             refs.wallHint.textContent =
@@ -5055,7 +5070,6 @@ window.__ModuleLoader__.load({
           if (refs.stage) refs.stage.classList.toggle('nxt-hud-off', !hudOn)
           root.classList.toggle('nxt-focus-on', Boolean(focusedAgent))
           setHtml(refs.analyze, focusedAgent ? analyzeHtml(focusedAgent) : '')
-          const prefs = prefsRef.current
           if (refs.prefs) {
             refs.prefs.dataset.open = prefsOpenRef.current ? '1' : '0'
             if (prefsOpenRef.current) setHtml(refs.prefs, prefsHtml(prefs))
