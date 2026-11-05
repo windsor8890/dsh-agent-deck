@@ -17,7 +17,7 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
-    "assets/*.png"
+    "assets/*.webp"
   ],
   "dsh": {
     "bundle": {
@@ -31,5 +31,9 @@
         "@deepseek-ai/dsh-client-locale"
       ]
     }
+  },
+  "scripts": {
+    "test": "node scripts/check.mjs",
+    "check": "node scripts/check.mjs"
   }
 }

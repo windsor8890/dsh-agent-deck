@@ -35,13 +35,13 @@
 斜投影实体块，不是 45° 旋转的等距棋盘），铺在舞台上方：两排 × 四列共 **8 张工位**，正好等于最大同时显示
 单元数（`MAX_CARDS = 8`）；每个 Session 首次出现时分配**固定工位**（前排左起 1–4、后排 5–8），超过 8 个单元时
 未分到工位的进入舞台右上角 `STANDBY +N` 托盘（可点击聚焦）；空位保留为暗色工位。墙面有 `WATCHTOWER // FLOOR 07`
-招牌、夜景窗、走字钟、两块壁挂数据板；地面带纵深网格、黄色导引线、前景绿植。每张工位上的东西全部是真实遥测：
+招牌、夜景窗、走字钟、两块壁挂数据板；地面带纵深网格、黄色导引线、前景绿植。**没有任何会话时**，#00 工位会常驻一位闭眼值班的鲸鱼娘（左栏同步显示 resident 卡），办公室不会空场；她只是装饰，没有会话、没有热区。每张工位上的东西全部是真实遥测：
 
 | 工位元素 | 真实数据 |
 |---|---|
 | 显示器里的迷你图 | 该单元自己的吞吐采样 / 工具调用分桶 / 最近调用耗时（三种轮换） |
 | 屏幕读数 | 该单元缓动的**估算** tokens/s（EST） |
-| **站在桌边的鲸鱼娘** | 七张生成精灵内嵌（`assets/whale-girl-{front,happy,stand,side,rest,slack,game}.png`，由本地 Codex imagegen 依据授权设定图 + 资源库 Q 版 prompt 生成；front=默认、happy=闭眼空闲、stand=举手忙碌、side=走路、rest=背面出错、slack=手机摸鱼、game=手柄打游戏），每个 agent 用身份色对发色/尾鳍选择性换色；空位不出现 |
+| **站在桌边的鲸鱼娘** | 七张生成精灵内嵌（`assets/whale-girl-{front,happy,stand,side,rest,slack,game}.webp`，由本地 Codex imagegen 依据授权设定图 + 资源库 Q 版 prompt 生成；front=默认、happy=闭眼空闲、stand=举手忙碌、side=走路、rest=背面出错、slack=手机摸鱼、game=手柄打游戏），每个 agent 用身份色对发色/尾鳍选择性换色；空位不出现 |
 | 鲸鱼娘 · 忙碌 | 用「举手」生成姿势、轻微起伏、头顶冒小火花、屏幕亮 |
 | 鲸鱼娘 · 空闲 | 用「闭眼开心」生成姿势、半透明、`z z` 上浮、身体轻微摇晃、屏幕只剩扫描线 |
 | 鲸鱼娘 · 出错 | 用「背面」生成姿势、头顶红色 `!` 闪烁、屏幕红框闪烁 |
@@ -147,6 +147,8 @@ todo 完成度合计）、以及缓动的 THRUPUT 读数。
 ## 性能与边界
 
 - 数据 100ms 批量发布，画布 60fps（`prefers-reduced-motion` 下停转）；矩阵/泳道/曲线为纯 DOM+SVG，无第三方图表库
+- **包体**：七张 WebP q95 精灵合计约 152 KiB；`client.js` 约 444 KiB（gzip 约 212 KiB），比此前的 PNG base64 版本减少约一半。
+  `scripts/check.mjs` 带 700 KiB 预算门禁；后续加动作/姿势应先看这条预算。
 - **动效预算**：极坐标网格与辐条预渲染成静态图层（resize 时重建），每帧只画刻度环、弧、轨道点与图表；
   全局/单个 tokens/s 读数以 0.22 系数缓动（滚动感），不额外触发 DOM 重建
 - 最多同屏 8 张 TUI 卡（其余折叠进 `LIVE FEED +N`）；工具日志 160 条、相位 420 条、文件 40 个、吞吐 72 采样
@@ -203,13 +205,19 @@ RADAR/NET 仍走整体反相；鲸鱼娘精灵在画布内做反向滤波以保�
 的 Q 版三视图（插件作者已授权）作为角色一致性参考，并使用资源库的 Q 版 prompt（CC BY-SA 4.0）作为角色描述。
 生成图集保存在 `docs/whale-girl-sheet-v1.jpg`，实际生图 prompt 保存在 `docs/whale-girl-image-prompt.txt`；
 摸鱼/打游戏两姿势的图集与 prompt 分别在 `docs/whale-girl-actions-v1.jpg`、`docs/whale-girl-actions-prompt.txt`。
-切好的七张透明 PNG 在 `assets/` 并内嵌到 `client.js`。资源库 README 明确设定图本身不在其 MIT/CC BY-SA 代码许可内，
+切好的七张透明 WebP（q95）在 `assets/` 并内嵌到 `client.js`；资源库 README 明确设定图本身不在其 MIT/CC BY-SA 代码许可内，
 二次使用请继续遵守原作者授权；生成图沿用该社区角色形象，仅供本项目使用。
 
 ## 质量记录
 
-> 以下记录来自开发期本地核验；`.cache/` 已被 `.gitignore` 排除，`report.md` 与 `harness*.mjs` 未随仓库提交，
-> 新克隆无法复跑这些脚本，30/30 只代表当时本地结果。
+> 以下记录来自开发期本地核验；`.cache/` 已被 `.gitignore` 排除，`report.md` 与旧版 `harness*.mjs` 未随仓库提交，
+> 30/30 只代表当时本地结果。当前可复跑的门禁是 `scripts/check.mjs`，不再依赖 `.cache/`。
+
+- **自动门禁（可复跑）**：`npm test` → `scripts/check.mjs`，覆盖语法、7 张精灵 data URI/资产哈希、
+  module-loader 契约、PREFS 归一化、访客节奏/上限、WAIT 动作矩阵、DOM id、README 引用、package files、
+  调试残留和 700 KiB 包体预算；GitHub Actions 在 `.github/workflows/check.yml` 上运行同一命令。
+- **手动 soak**：`docs/quality/soak-checklist.md` 列出空场 resident、9+ 会话/席位回收、PREFS、主题、
+  reduced-motion、resize/DPI、焦点/CINEMA 与 30 分钟性能观察；画布 60fps/浅色 filter 的实际开销仍以该清单记录为准。
 
 - 独立 API 核验（`api-scribe`）：6 条客户端契约假设全部落定，`retain` source 等按核验结论修正。
 - 独立代码审计（`code-auditor`）：11 条发现（高 0 / 中 4 / 低 7），报告见 `.cache/audit/report.md`，
@@ -236,7 +244,8 @@ RADAR/NET 仍走整体反相；鲸鱼娘精灵在画布内做反向滤波以保�
   串访是视觉模拟，不读取真实对话内容，父子优先关系来自 `parentId` 拓扑；摸鱼/打游戏只改变办公室里的
   姿势，不改变 agent 的真实运行状态（由 `WAIT`/pending interaction/held 状态驱动）；
   `prefers-reduced-motion` 在启动时采样（运行中切换 OS 设置需刷新页面）；RADAR/NET 不做浅色单独调色；
-  `PREFS` 仅保存在当前浏览器的 `localStorage`，不随账号/机器同步。
+  `PREFS` 仅保存在当前浏览器的 `localStorage`，不随账号/机器同步；没有会话时的 #00 resident
+  与左栏 resident 卡是纯装饰（无会话、无热区、不参与遥测聚合）。
 
 ## 文件
 
@@ -248,11 +257,14 @@ client.js           全部 UI 与遥测折叠（单文件、无构建）
 locale/en.json      插件页显示元数据
 locale/zh.json
 icon.svg            插件图标
-assets/whale-girl-{front,happy,stand,side,rest,slack,game}.png  鲸鱼娘七姿势生成精灵（client.js 内嵌 base64 副本）
+assets/whale-girl-{front,happy,stand,side,rest,slack,game}.webp  鲸鱼娘七姿势生成精灵（client.js 内嵌 base64 副本）
 docs/whale-girl-sheet-v1.jpg        Codex imagegen 生成的原始图集（5 姿势）
 docs/whale-girl-image-prompt.txt    实际生成时使用的 prompt
 docs/whale-girl-actions-v1.jpg      Codex imagegen 生成的摸鱼/打游戏图集
 docs/whale-girl-actions-prompt.txt  动作图集实际使用的 prompt
+docs/quality/soak-checklist.md      手动运行时/长时浸泡验收清单
+scripts/check.mjs                   可复跑的 bundle/资产/模块/偏好/文档门禁（npm test）
+.github/workflows/check.yml         CI：push/PR 跑 npm test
 docs/preview-*.png,jpg        历史截图与配色重映射预览（详见“截图”一节）
 ```
 
