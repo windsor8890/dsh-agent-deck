@@ -10,7 +10,7 @@
 
 ## Whale-girl
 
-Our DIY whale-girl is generated with the local Codex imagegen; seven state poses (source sheets and prompts live under `docs/`):
+Our DIY whale-girl, seven state poses:
 
 | State | Pose | Meaning |
 |---|---|---|
