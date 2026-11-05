@@ -45,4 +45,4 @@ No `npm install` or build step is needed; refresh the DSH Web GUI after installi
 
 ### Let an agent install it
 
-> Clone or use a local copy of https://github.com/windsor8890/dsh-agent-deck, install it into the active DSH profile with `dsh plugin --profile <profile> add <absolute-repo-path>`, then refresh the DSH Web GUI and verify the Control Room panel.
+> Install https://github.com/windsor8890/dsh-agent-deck with `dsh plugin --profile <profile> add <absolute-repo-path>`, then refresh the DSH Web GUI.

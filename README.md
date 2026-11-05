@@ -45,4 +45,4 @@ dsh plugin --profile desktop add /path/to/dsh-agent-deck
 
 ### 让 agent 自行安装
 
-> 请把 https://github.com/windsor8890/dsh-agent-deck 克隆或使用本地目录，并通过 `dsh plugin --profile <profile> add <仓库绝对路径>` 安装到当前 DSH profile，刷新 Web GUI 后在「监控室」验证。
+> 请把 https://github.com/windsor8890/dsh-agent-deck 用 `dsh plugin --profile <profile> add <仓库绝对路径>` 安装到当前 DSH profile，然后刷新 Web GUI。
