@@ -1319,6 +1319,9 @@ window.__ModuleLoader__.load({
 .nxt-resident-art{flex:1 1 0; min-height:96px; display:flex; align-items:center; justify-content:center; overflow:hidden}
 .nxt-resident-img{height:min(160px, 100%); max-width:100%; object-fit:contain; image-rendering:auto;
   filter:drop-shadow(0 0 9px rgba(85,255,255,0.18))}
+/* The root light theme inverts all DOM; counter-invert the resident image so it
+   keeps the same palette as the canvas sprites. */
+.nxt-root.nxt-light .nxt-resident-img{filter:invert(1) hue-rotate(180deg) drop-shadow(0 0 9px rgba(85,255,255,0.18))}
 .nxt-resident .nxt-think{font-size:9px}
 .nxt-resident-hint{font-size:8px; color:#555555; text-align:center; padding-top:3px; flex:none}
 .nxt-resident .nxt-standby{padding:8px 4px 2px}
