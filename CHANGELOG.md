@@ -46,6 +46,8 @@
 - Every remaining rendered chart is now Canvas: tool-mix/file/context/latency bars,
   per-unit mini charts, phase stacked bar/timeline, tool-matrix heatmap, context/task
   rings and the focused THRUPUT trace. No SVG charts remain in the live UI.
+- Fixed ANALYZE hiding its new chart canvases: the old focus rule now hides only the
+  office canvas, not every canvas in the stage.
 - Wall clock is screen-anchored to the visible top-right wall; the throughput/tool-load
   monitors now sit below it instead of covering it.
 - Removed the unexplained decorative hexagonal wall emblem.

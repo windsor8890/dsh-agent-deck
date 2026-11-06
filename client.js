@@ -1629,7 +1629,7 @@ window.__ModuleLoader__.load({
 .nxt-pref-btn[data-active="1"]{color:#000000; background:#ffff55; border-color:#ffff55}
 .nxt-pref-note{color:rgba(170,170,170,0.7); line-height:1.5; border-top:1px solid rgba(85,255,255,0.12); padding-top:6px}
 .nxt-stage.nxt-analyze-on .nxt-analyze{display:grid}
-.nxt-stage.nxt-analyze-on canvas{display:none}
+.nxt-stage.nxt-analyze-on > canvas{display:none}
 .nxt-stage.nxt-analyze-on .nxt-legend{display:none}
 .nxt-stage.nxt-analyze-on .nxt-stage-tag{display:none}
 .nxt-stage.nxt-analyze-on .nxt-standby-tray{display:none}
@@ -5815,8 +5815,6 @@ window.__ModuleLoader__.load({
             const cssH = canvas.clientHeight
             if (cssW < 4 || cssH < 4) continue
             const key = pct + ':' + value + ':' + sub + ':' + hot + ':' + cssW + 'x' + cssH
-            if (canvas.__nxtRingKey === key) continue
-            canvas.__nxtRingKey = key
             const ringDpr = Math.min(2, window.devicePixelRatio || 1)
             const backingW = Math.round(cssW * ringDpr)
             const backingH = Math.round(cssH * ringDpr)
@@ -5854,8 +5852,6 @@ window.__ModuleLoader__.load({
             const cssH = canvas.clientHeight
             if (cssW < 4 || cssH < 4) continue
             const key = cssW + 'x' + cssH + ':' + max + ':' + values.join(',')
-            if (canvas.__nxtMatrixKey === key) continue
-            canvas.__nxtMatrixKey = key
             const mxDpr = Math.min(2, window.devicePixelRatio || 1)
             if (canvas.width !== Math.round(cssW * mxDpr)) canvas.width = Math.round(cssW * mxDpr)
             if (canvas.height !== Math.round(cssH * mxDpr)) canvas.height = Math.round(cssH * mxDpr)
@@ -5881,8 +5877,6 @@ window.__ModuleLoader__.load({
             const cssH = canvas.clientHeight
             if (cssW < 4 || cssH < 4) continue
             const key = cssW + 'x' + cssH + ':' + JSON.stringify(segments)
-            if (canvas.__nxtLaneKey === key) continue
-            canvas.__nxtLaneKey = key
             const laneDpr = Math.min(2, window.devicePixelRatio || 1)
             if (canvas.width !== Math.round(cssW * laneDpr)) canvas.width = Math.round(cssW * laneDpr)
             if (canvas.height !== Math.round(cssH * laneDpr)) canvas.height = Math.round(cssH * laneDpr)
@@ -5902,8 +5896,6 @@ window.__ModuleLoader__.load({
               if (!agent) continue
               const history = (agent.tpsHistory || []).slice(-48)
               const key = history.length + ':' + shownTps(agent).toFixed(1) + ':' + (agent.color || '')
-              if (canvas.__nxtAnalyzeKey === key) continue
-              canvas.__nxtAnalyzeKey = key
               drawCanvasSpark(canvas, history.length > 1 ? history : [0, 0], agent.color || '#55ffff')
             }
           }
@@ -5930,8 +5922,6 @@ window.__ModuleLoader__.load({
             const color =
               kind === 'file' ? '#ff55ff' : bar.getAttribute('data-err') === '1' ? '#ff5555' : '#55ffff'
             const key = kind + ':' + value + ':' + max + ':' + color
-            if (bar.__nxtBarKey === key) continue
-            bar.__nxtBarKey = key
             drawBarCanvas(bar, pct, color)
           }
           if (latestChartView) {
@@ -5941,8 +5931,6 @@ window.__ModuleLoader__.load({
               const key = agent
                 ? agent.state + ':' + shownTps(agent).toFixed(1) + ':' + (agent.tools || []).length + ':' + kind
                 : 'none'
-              if (canvas.__nxtVizKey === key) continue
-              canvas.__nxtVizKey = key
               drawUnitVizCanvas(canvas, agent, kind)
             }
           }
