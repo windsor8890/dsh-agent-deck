@@ -11,6 +11,9 @@
 - `CINEMA` briefing layout with larger battle bar/legend and optional `CINEMA SKIN: COZY / COLD` in `PREFS`.
 - Prioritized `LIVE FEED` ticker: errors, waiting units and completed units before ordinary log lines.
 - Character micro-actions: error smoke puffs and a short sparkle burst when a unit leaves RUN.
+- Fixed a first-entry flash: sprites now start decoding when the plugin applies, and the
+  old procedural character is never drawn as a placeholder. Until the WebP data URLs
+  settle, the unit is skipped; a failed pose reuses the front sprite only after probing.
 
 ## 0.5.0 — 2026-11-06
 

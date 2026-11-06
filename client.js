@@ -2580,15 +2580,26 @@ window.__ModuleLoader__.load({
     }
     const girlLoadingPoses = new Set()
     const girlPoseFailed = new Set()
+    let girlSpritesPending = Object.keys(GIRL_SPRITE_SRC).length
+    let girlSpritesSettled = false
+    function markGirlPoseSettled() {
+      girlSpritesPending = Math.max(0, girlSpritesPending - 1)
+      if (girlSpritesPending === 0) girlSpritesSettled = true
+    }
     function ensureGirlSprites() {
       // Retry any pose that is not decoded yet; each pose is loaded at most once at
       // a time. A failed data URL is remembered so a broken asset cannot re-decode
-      // 60 times per second forever (the procedural fallback stays in charge).
+      // 60 times per second forever.
+      if (typeof Image === 'undefined') {
+        girlSpritesSettled = true
+        return
+      }
       for (const pose of Object.keys(GIRL_SPRITE_SRC)) {
         if (girlPoseData[pose] || girlLoadingPoses.has(pose) || girlPoseFailed.has(pose)) continue
         girlLoadingPoses.add(pose)
         const finish = () => {
           girlLoadingPoses.delete(pose)
+          markGirlPoseSettled()
         }
         try {
           const img = new Image()
@@ -2676,12 +2687,14 @@ window.__ModuleLoader__.load({
     function girlSpriteFor(mode, color) {
       ensureGirlSprites()
       const pose = girlPoseFor(mode)
-      // never substitute another pose: a wrong pose must not be cached, so a frame
-      // that renders before the image decodes falls back to the procedural art
-      const base = girlPoseData[pose]
-      if (!base) return null
+      // Never draw the old procedural character as a placeholder. While the
+      // embedded WebP data URLs decode, the unit is simply skipped for a frame or
+      // two; once decoding settles, a failed pose may reuse the front sprite.
+      const sourcePose = girlPoseData[pose] ? pose : girlSpritesSettled && girlPoseData.front ? 'front' : null
+      if (!sourcePose) return null
+      const base = girlPoseData[sourcePose]
       const targetHue = girlHue(color)
-      const key = pose + '|' + Math.round(targetHue)
+      const key = sourcePose + '|' + Math.round(targetHue)
       const cached = girlVariants.get(key)
       if (cached) return cached
       const cv = document.createElement('canvas')
@@ -2708,23 +2721,7 @@ window.__ModuleLoader__.load({
       const options = opts || {}
       const reduced = Boolean(options.reduced)
       const sprite = girlSpriteFor(mode, color)
-      if (!sprite) {
-        // Fallback art must match the frame's scheme/mirroring too, otherwise a
-        // failed/late sprite decode is visibly inconsistent with the sprites.
-        context.save()
-        const restoreFilter = context.filter || 'none'
-        if (activeScheme === 'light') context.filter = 'invert(1) hue-rotate(180deg)'
-        if (options.flip) {
-          context.translate(anchor.x, 0)
-          context.scale(-1, 1)
-          context.translate(-anchor.x, 0)
-        }
-        const fallbackMode = mode === 'slack' || mode === 'game' ? 'idle' : mode
-        drawAgentGirlArt(context, now, anchor, height, color, fallbackMode, seed, u, { reduced })
-        context.filter = restoreFilter
-        context.restore()
-        return
-      }
+      if (!sprite) return
       const busy = mode === 'busy'
       const idle = mode === 'idle'
       const error = mode === 'error'
@@ -5690,6 +5687,9 @@ window.__ModuleLoader__.load({
     }
 
     function apply(ctx) {
+      // Start decoding the embedded sprites as soon as the plugin is applied;
+      // opening the monitor later should not flash a placeholder character.
+      ensureGirlSprites()
       ctx.effect(() => ctx.locale.register(NS, { zh: DICT.zh, en: DICT.en }), 'watchtower: dictionaries')
       const t = ctx.locale.bind(NS)
       const monitor = createMonitor(ctx)
