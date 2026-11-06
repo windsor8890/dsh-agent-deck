@@ -38,7 +38,7 @@ window.__ModuleLoader__.load({
     // Owner-tunable behaviours persisted per browser. Visits and desk actions are
     // cosmetic; changing them never writes anything back to the Host.
     const PREFS_KEY = 'agent-deck:prefs:v1'
-    const DEFAULT_PREFS = { visits: true, visitPace: 'chill', maxVisitors: 2, actions: true }
+    const DEFAULT_PREFS = { visits: true, visitPace: 'chill', maxVisitors: 2, actions: true, cinemaSkin: 'cozy' }
     const VISIT_PACE_MULT = { chill: 1.5, normal: 1, lively: 0.65 }
     function normalizePrefs(parsed) {
       const value = parsed && typeof parsed === 'object' ? parsed : {}
@@ -47,6 +47,7 @@ window.__ModuleLoader__.load({
         visitPace: value.visitPace === 'normal' || value.visitPace === 'lively' ? value.visitPace : 'chill',
         maxVisitors: value.maxVisitors === 1 ? 1 : 2,
         actions: value.actions !== false,
+        cinemaSkin: value.cinemaSkin === 'cold' ? 'cold' : 'cozy',
       }
     }
     function visitPaceFor(prefs) {
@@ -1255,6 +1256,7 @@ window.__ModuleLoader__.load({
   padding:7px 8px 6px; cursor:pointer; transition:border-color .18s, transform .18s, box-shadow .18s; border-left-width:2px;
   display:flex; flex-direction:column; flex:1 1 auto; min-height:158px; overflow:hidden}
 .nxt-card:hover{border-left-color:var(--nxt-frame); background:rgba(16,17,20,0.98)}
+.nxt-card[data-hover="1"]{border-left-color:var(--nxt-frame); box-shadow:inset 0 0 18px -8px var(--nxt-frame); background:rgba(16,17,20,0.98)}
 .nxt-card[data-state="run"]{border-left-color:var(--nxt-cy); box-shadow:inset 2px 0 12px -6px var(--nxt-cy)}
 .nxt-card[data-state="wait"]{border-left-color:var(--nxt-am)}
 .nxt-card[data-state="err"]{border-left-color:var(--nxt-rd); animation:nxt-alarm 2.2s ease-in-out infinite}
@@ -1442,6 +1444,15 @@ window.__ModuleLoader__.load({
 .nxt-ticker .nxt-tk{flex:none; color:var(--nxt-cy); letter-spacing:.22em; font-size:8px}
 .nxt-ticker .nxt-tv{overflow:hidden; text-overflow:ellipsis}
 .nxt-ticker .nxt-ts{margin-left:auto; color:#555555; font-variant-numeric:tabular-nums; flex:none}
+.nxt-feed{display:flex; align-items:center; gap:12px; min-width:0; flex:1; overflow:hidden}
+.nxt-feed-i{display:inline-flex; align-items:center; gap:5px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:none; max-width:46%; color:#aaaaaa}
+.nxt-feed-i i{display:inline-block; width:4px; height:4px; flex:none; background:currentColor}
+.nxt-feed-i[data-k="err"]{color:#ff5555}
+.nxt-feed-i[data-k="wait"]{color:#ffff55}
+.nxt-feed-i[data-k="done"]{color:#55ff55}
+.nxt-feed-i[data-k="unit"]{color:#ff55ff}
+.nxt-feed-i[data-k="sys"]{color:#55ffff}
+.nxt-feed-i[data-k="none"]{color:#555555}
 
 .nxt-vig{position:absolute; inset:0; pointer-events:none; z-index:6}
 .nxt-vig{background:radial-gradient(125% 95% at 50% 42%, transparent 44%, rgba(0,0,0,.6) 100%)}
@@ -1464,6 +1475,77 @@ window.__ModuleLoader__.load({
   border:1px solid rgba(255,255,85,0.22); background:rgba(10,10,10,0.7); color:#aaaaaa; border-radius:0; text-transform:uppercase}
 .nxt-mode:hover{color:var(--nxt-frame); border-color:rgba(255,255,85,0.5)}
 .nxt-mode[data-active="1"]{color:#000000; background:#ffff55; border-color:#ffff55; box-shadow:none}
+
+/* Battle bar: always-visible state summary above the stage. */
+.nxt-battlebar{display:flex; align-items:center; gap:5px; padding:4px 9px; flex:none;
+  border-bottom:1px solid rgba(85,255,255,0.10); background:rgba(0,0,0,0.58); overflow:hidden; white-space:nowrap}
+.nxt-battle{display:inline-flex; align-items:center; gap:5px; padding:2px 6px; flex:none;
+  border:1px solid rgba(85,255,255,0.14); background:rgba(8,10,12,0.72);
+  font:600 8px/1.1 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.10em; color:var(--nxt-dim)}
+.nxt-battle b{font-size:11px; line-height:1; color:#ffffff; font-weight:600; font-variant-numeric:tabular-nums}
+.nxt-battle i{font-style:normal; width:5px; height:5px; display:inline-block; background:currentColor; box-shadow:0 0 5px currentColor}
+.nxt-battle[data-k="active"]{color:#55ffff}
+.nxt-battle[data-k="wait"]{color:#ffff55}
+.nxt-battle[data-k="err"]{color:#ff5555}
+.nxt-battle[data-k="err"][data-hot="1"]{animation:nxt-blink 1.6s steps(2,end) infinite}
+.nxt-battle[data-k="sync"]{color:#8a8a8a}
+.nxt-battle[data-k="desks"]{color:#55ff55; margin-left:auto}
+.nxt-cinema .nxt-battlebar{padding:7px 14px; gap:9px}
+.nxt-cinema .nxt-battle{font-size:10px; padding:4px 9px; gap:7px}
+.nxt-cinema .nxt-battle b{font-size:15px}
+.nxt-cinema .nxt-battle i{width:7px; height:7px}
+
+/* Agent strip: compact roster when the card wall can only show 4 units. */
+.nxt-agentstrip{display:flex; gap:3px; padding:4px 7px; flex:none; overflow-x:auto; scrollbar-width:thin;
+  border-bottom:1px solid rgba(85,255,255,0.08); background:rgba(0,0,0,0.42)}
+.nxt-agentstrip[hidden]{display:none}
+.nxt-astrip{display:inline-flex; align-items:center; gap:4px; flex:none; padding:2px 5px; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.12); background:rgba(10,10,10,0.72); color:#aaaaaa; border-radius:0;
+  font:600 8px/1.2 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.06em; white-space:nowrap}
+.nxt-astrip:hover,.nxt-astrip[data-hover="1"]{border-color:var(--nxt-frame); color:#ffffff}
+.nxt-astrip i{font-style:normal; color:var(--nxt-dim)}
+.nxt-astrip[data-state="run"] i{color:#55ffff}
+.nxt-astrip[data-state="wait"] i{color:#ffff55}
+.nxt-astrip[data-state="err"] i{color:#ff5555}
+.nxt-astrip[data-state="sync"] i{color:#8a8a8a}
+.nxt-astrip b{color:#ffffff; font-weight:600}
+.nxt-astrip span{color:#777777; font-size:7px}
+.nxt-cinema .nxt-agentstrip{padding:6px 14px; gap:5px}
+.nxt-cinema .nxt-astrip{font-size:10px; padding:3px 8px}
+.nxt-cinema .nxt-cinema-hint{display:block}
+
+/* Clickable state legend. */
+.nxt-legend{display:none; position:absolute; left:10px; top:8px; z-index:8; align-items:center; gap:4px}
+.nxt-legend[data-show="1"]{display:flex}
+.nxt-legend-t{font-size:7px; letter-spacing:.18em; color:#555555; margin-right:2px}
+.nxt-legend button{cursor:pointer; padding:2px 5px; border:1px solid rgba(255,255,255,0.16); background:rgba(0,0,0,0.72);
+  color:#aaaaaa; border-radius:0; font:600 7px/1.1 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.08em}
+.nxt-legend button:hover{border-color:var(--nxt-frame); color:#ffffff}
+.nxt-legend button[data-active="1"]{color:#000000; background:#ffff55; border-color:#ffff55}
+.nxt-legend button i{display:inline-block; width:5px; height:5px; margin-right:3px; background:currentColor}
+.nxt-legend button[data-legend="run"] i{background:#55ffff}
+.nxt-legend button[data-legend="wait"] i{background:#ffff55}
+.nxt-legend button[data-legend="sync"] i{background:#8a8a8a}
+.nxt-legend button[data-legend="err"] i{background:#ff5555}
+.nxt-cinema .nxt-legend{top:12px; left:14px; gap:6px}
+.nxt-cinema .nxt-legend button{font-size:9px; padding:3px 7px}
+
+/* Optional cold briefing skin for CINEMA/video capture. */
+.nxt-root.nxt-cinema.nxt-cold{
+  --nxt-cy:#9ffcff; --nxt-frame:#b8ffe8; --nxt-mg:#ff4f8b; --nxt-am:#ffd166; --nxt-line:rgba(120,255,220,0.15);
+  background:
+    radial-gradient(110% 80% at 50% -10%, rgba(80,255,220,0.10), transparent 60%),
+    radial-gradient(90% 60% at 100% 110%, rgba(255,79,139,0.10), transparent 60%),
+    #01070a;
+}
+.nxt-root.nxt-cinema.nxt-cold .nxt-panel{border-color:rgba(120,255,220,0.20)}
+.nxt-root.nxt-cinema.nxt-cold .nxt-battlebar{background:rgba(0,10,12,0.82)}
+.nxt-root.nxt-cinema.nxt-cold .nxt-stage::after{content:""; position:absolute; inset:0; pointer-events:none; z-index:7;
+  background:repeating-linear-gradient(0deg, rgba(0,18,20,0.18) 0 1px, transparent 1px 4px); opacity:.45}
+.nxt-root.nxt-cinema.nxt-cold .nxt-vig{
+  background:radial-gradient(120% 92% at 50% 42%, transparent 42%, rgba(0,8,10,.72) 100%);
+}
+
 .nxt-cinema .nxt-wallpanel,.nxt-cinema .nxt-railpanel{display:none}
 .nxt-cinema .nxt-body{grid-template-columns:minmax(0,1fr)}
 
@@ -1584,6 +1666,8 @@ window.__ModuleLoader__.load({
           <button type="button" class="nxt-mode" data-prefs="1" title="Office preferences">PREFS</button>
         </div>
       </div>
+      <div class="nxt-battlebar" id="nxt-battlebar"></div>
+      <div class="nxt-agentstrip" id="nxt-agentstrip" hidden></div>
       <div class="nxt-stage" id="nxt-stage">
         <canvas id="nxt-canvas"></canvas>
         <div class="nxt-analyze" id="nxt-analyze"></div>
@@ -1596,7 +1680,7 @@ window.__ModuleLoader__.load({
         </div>
         <div class="nxt-stage-tag" id="nxt-stage-tag"></div>
         <div class="nxt-standby-tray" id="nxt-standby-tray" hidden></div>
-        <div class="nxt-legend"></div>
+        <div class="nxt-legend" id="nxt-legend"></div>
       </div>
     </div>
     <div class="nxt-panel nxt-railpanel">
@@ -1632,6 +1716,58 @@ window.__ModuleLoader__.load({
 
     function stateLabel(state) {
       return state === 'run' ? 'RUN' : state === 'wait' ? 'WAIT' : state === 'err' ? 'ERR' : 'SYNC'
+    }
+
+    const STATE_LEGEND = [
+      ['run', 'RUN'],
+      ['wait', 'WAIT'],
+      ['sync', 'SYNC'],
+      ['err', 'ERR'],
+    ]
+
+    function battleHtml(view) {
+      const agents = ((view && view.agents) || []).filter((agent) => !agent.held)
+      const count = (state) => agents.filter((agent) => agent.state === state).length
+      const active = agents.length
+      const waiting = count('wait')
+      const errors = count('err')
+      const sync = count('sync')
+      const desks = (view && view.totals && view.totals.desks) || 0
+      const standby = (view && view.totals && view.totals.overflow) || 0
+      const tps = view && view.totals ? view.totals.tpsDisplay !== undefined ? view.totals.tpsDisplay : view.totals.tps : 0
+      return (
+        '<span class="nxt-battle" data-k="active" title="Live units"><i></i>ACTIVE <b>' + active + '</b></span>' +
+        '<span class="nxt-battle" data-k="wait" title="Waiting for a human or idle wait"><i></i>WAITING <b>' + waiting + '</b></span>' +
+        '<span class="nxt-battle" data-k="err" data-hot="' + (errors > 0 ? '1' : '0') + '" title="Units currently in error"><i></i>ERRORS <b>' + errors + '</b></span>' +
+        '<span class="nxt-battle" data-k="sync" title="Settling units"><i></i>SYNC <b>' + sync + '</b></span>' +
+        '<span class="nxt-battle" data-k="tps" title="Estimated aggregate tokens/s"><i></i>TPS <b>' + (Number.isFinite(tps) ? tps : 0).toFixed(1) + '</b></span>' +
+        '<span class="nxt-battle" data-k="desks" title="Seated units and standby overflow"><i></i>DESKS <b>' + desks + '/8</b>' +
+        (standby > 0 ? ' <b style="color:#ffff55">+' + standby + '</b>' : '') + '</span>'
+      )
+    }
+
+    function agentStripHtml(agents, focus, hover) {
+      return agents
+        .map(
+          (agent) =>
+            '<button type="button" class="nxt-astrip" data-id="' + esc(agent.id) + '" data-state="' + esc(agent.state) + '"' +
+            (hover === agent.id ? ' data-hover="1"' : '') +
+            ' title="' + esc((agent.name || agent.id) + '\nCLICK: FOCUS') + '">' +
+            '<i style="color:' + esc(agent.color) + '">' + esc(agent.tag) + '</i>' +
+            '<b>' + esc(agent.name || agent.id) + '</b><span>' + stateLabel(agent.state) + ' · ' + shownTps(agent).toFixed(1) + '</span></button>',
+        )
+        .join('')
+    }
+
+    function legendHtml(active) {
+      return (
+        '<span class="nxt-legend-t">FILTER</span>' +
+        STATE_LEGEND.map(
+          ([state, label]) =>
+            '<button type="button" data-legend="' + state + '" data-active="' + (active === state ? '1' : '0') + '"><i></i>' + label + '</button>',
+        ).join('') +
+        '<button type="button" data-legend="all" data-active="' + (active ? '0' : '1') + '">ALL</button>'
+      )
     }
 
     /** Inline sparkline markup (100xH viewBox, stretched by CSS). */
@@ -1691,7 +1827,7 @@ window.__ModuleLoader__.load({
       return '<svg class="nxt-spark-svg" viewBox="0 0 46 12" preserveAspectRatio="none">' + rows + '</svg>'
     }
 
-    function cardHtml(agent, focused) {
+    function cardHtml(agent, focused, hovered) {
       const tools = agent.tools.length > 0 ? agent.tools.map(toolHtml).join('') : '<div class="nxt-tool"><span class="nxt-ta">—</span></div>'
       const think = agent.think
         ? '<div class="nxt-think nxt-stream"><span>' + esc(tail(agent.think, THINK_CAP)) + '</span></div>'
@@ -1710,6 +1846,7 @@ window.__ModuleLoader__.load({
         esc(agent.id) +
         '"' +
         (focused === agent.id ? ' data-focused="1"' : '') +
+        (hovered === agent.id ? ' data-hover="1"' : '') +
         ' title="' +
         esc(agent.name + (agent.cwd ? '\n' + agent.cwd : '') + '\nCLICK: FOCUS · ↗: OPEN SESSION') +
         '">' +
@@ -1999,7 +2136,8 @@ window.__ModuleLoader__.load({
         row('VISIT PACE', prefsSegment('visitPace', prefs.visitPace, [['chill', 'CHILL'], ['normal', 'NORMAL'], ['lively', 'LIVELY']])) +
         row('MAX VISITORS', prefsSegment('maxVisitors', prefs.maxVisitors, [[1, '1'], [2, '2']])) +
         row('DESK ACTIONS', prefsSegment('actions', prefs.actions ? 1 : 0, [[1, 'ON'], [0, 'OFF']])) +
-        '<div class="nxt-pref-note">Visits and desk actions are cosmetic and never write to the Host. Saved locally in this browser; theme follows DSH appearance.</div>'
+        row('CINEMA SKIN', prefsSegment('cinemaSkin', prefs.cinemaSkin || 'cozy', [['cozy', 'COZY'], ['cold', 'COLD']])) +
+        '<div class="nxt-pref-note">Visits and desk actions are cosmetic and never write to the Host. CINEMA COLD is a briefing-only skin. Saved locally in this browser; theme follows DSH appearance.</div>'
       )
     }
 
@@ -2315,20 +2453,43 @@ window.__ModuleLoader__.load({
     }
 
     function tickerHtml(view) {
+      const agents = ((view && view.agents) || [])
+      const live = agents.filter((agent) => !agent.held)
+      const errors = live.filter((agent) => agent.state === 'err')
+      const waits = live.filter((agent) => agent.state === 'wait')
+      const held = agents.filter((agent) => agent.held)
       const last = view.log[view.log.length - 1]
-      const totals = view.totals
-      const text = last ? String(last.kind).toUpperCase() + ' // ' + last.text : 'AWAITING TELEMETRY'
+      const feed = []
+      const push = (kind, text) => {
+        const value = String(text || '').trim()
+        if (value && !feed.some((item) => item.kind === kind && item.text === value)) feed.push({ kind, text: value })
+      }
+      const labelOf = (agent) => agent.tag + ' ' + (agent.name || agent.id)
+      if ((view.alerts || []).length > 0) push('err', 'ALERT ' + view.alerts[0])
+      for (const agent of errors.slice(0, 2)) push('err', 'ERR ' + labelOf(agent))
+      for (const agent of waits.slice(0, 2)) push('wait', 'WAIT ' + labelOf(agent) + (agent.pending ? ' · needs input' : ''))
+      for (const agent of held.slice(0, 1)) push('done', 'DONE ' + labelOf(agent))
+      if (last) push(last.kind, String(last.kind).toUpperCase() + ' ' + last.text)
+      const items = feed.slice(0, 3)
       return (
-        '<span class="nxt-tk">FEED</span><span class="nxt-tv">' +
-        esc(text) +
+        '<span class="nxt-tk">FEED</span><span class="nxt-tv nxt-feed">' +
+        (items.length > 0
+          ? items
+              .map(
+                (item) =>
+                  '<span class="nxt-feed-i" data-k="' + esc(item.kind) + '" title="' + esc(item.text) + '">' +
+                  '<i></i>' + esc(item.text) + '</span>',
+              )
+              .join('')
+          : '<span class="nxt-feed-i" data-k="none">AWAITING TELEMETRY</span>') +
         '</span><span class="nxt-ts">AGENTS ' +
-        totals.count +
+        view.totals.count +
         ' · Σ ' +
-        (totals.tpsDisplay !== undefined ? totals.tpsDisplay : totals.tps).toFixed(1) +
+        (view.totals.tpsDisplay !== undefined ? view.totals.tpsDisplay : view.totals.tps).toFixed(1) +
         ' est t/s · TOK ' +
-        fmtNum(totals.tin) +
+        fmtNum(view.totals.tin) +
         '/' +
-        fmtNum(totals.tout) +
+        fmtNum(view.totals.tout) +
         '</span>'
       )
     }
@@ -3303,7 +3464,7 @@ window.__ModuleLoader__.load({
       context.restore()
     }
 
-    function startStage(canvas, readState, onPick) {
+    function startStage(canvas, readState, onPick, onHover) {
       const context = canvas.getContext('2d')
       if (!context) return () => {}
       const reduceMotion = (() => {
@@ -3328,6 +3489,9 @@ window.__ModuleLoader__.load({
       let lastWave = 0
       let angle = 0
       let hitAreas = []
+      let hoverAreaId = null
+      const agentLastState = new Map()
+      const agentCelebrateUntil = new Map()
       let gridLayer = null
       let gridLayerKey = ''
       // Unit-radius gradients reused every frame; per-draw glow is a scale transform,
@@ -3630,6 +3794,25 @@ window.__ModuleLoader__.load({
         const totals = state.totals || {}
         const history = state.history || []
         const toolStats = state.toolStats || []
+        const hover = state.hover && agents.some((agent) => agent.id === state.hover) ? state.hover : null
+        const hoverIds = new Set(hover ? [hover] : [])
+        if (hover) {
+          for (const edge of (state.topology && state.topology.edges) || []) {
+            if (edge.from === hover) hoverIds.add(edge.to)
+            else if (edge.to === hover) hoverIds.add(edge.from)
+          }
+        }
+        const legendFilter = state.legendFilter || null
+        for (const agent of agents) {
+          const previous = agentLastState.get(agent.id)
+          if (previous === 'run' && agent.state !== 'run' && !reduceMotion) {
+            agentCelebrateUntil.set(agent.id, now + 1500)
+          }
+          agentLastState.set(agent.id, agent.state)
+        }
+        for (const [id, until] of agentCelebrateUntil) {
+          if (now >= until) agentCelebrateUntil.delete(id)
+        }
         const DESK_COLS = 4
         const DESK_ROWS = 2
         const TOTAL_DESKS = DESK_COLS * DESK_ROWS
@@ -4245,6 +4428,64 @@ window.__ModuleLoader__.load({
         desks.sort((a, b) => a.y - b.y || a.x - b.x)
         hitAreas = []
 
+        const drawHoverRing = (anchor, height, now, color) => {
+          context.save()
+          const ringR = Math.max(12, height * 0.5)
+          const pulse = 0.72 + 0.28 * Math.sin(now / 220)
+          context.strokeStyle = hexA(color, 0.9)
+          context.lineWidth = 1.6
+          context.shadowColor = color
+          context.shadowBlur = 12
+          context.beginPath()
+          context.ellipse(anchor.x, anchor.y + 2, ringR, ringR * 0.28, 0, 0, Math.PI * 2)
+          context.stroke()
+          context.strokeStyle = hexA(color, 0.35 + pulse * 0.25)
+          context.beginPath()
+          context.ellipse(anchor.x, anchor.y + 2, ringR * 1.28, ringR * 0.36, 0, 0, Math.PI * 2)
+          context.stroke()
+          context.restore()
+        }
+
+        const drawSmokePuffs = (anchor, height, now, seed) => {
+          if (reduceMotion) return
+          context.save()
+          for (let puff = 0; puff < 3; puff++) {
+            const phase = ((now / 900 + seed * 0.13 + puff * 0.27) % 1)
+            const px = anchor.x + Math.sin(now / 420 + puff * 2.1 + seed) * (height * 0.20)
+            const py = anchor.y - height * 0.78 - phase * height * 0.55
+            const radius = height * (0.035 + phase * 0.09)
+            context.fillStyle = themed(
+              'rgba(255,110,110,' + (0.20 * (1 - phase)).toFixed(2) + ')',
+              'rgba(85,255,255,' + (0.20 * (1 - phase)).toFixed(2) + ')',
+            )
+            context.beginPath()
+            context.arc(px, py, radius, 0, Math.PI * 2)
+            context.fill()
+          }
+          context.restore()
+        }
+
+        const drawCelebration = (anchor, height, now, until, seed) => {
+          if (reduceMotion || now >= until) return
+          const progress = 1 - (until - now) / 1500
+          context.save()
+          for (let spark = 0; spark < 7; spark++) {
+            const angle = (spark / 7) * Math.PI * 2 + seed
+            const travel = height * (0.18 + progress * 0.6)
+            const px = anchor.x + Math.cos(angle) * travel
+            const py = anchor.y - height * 0.45 + Math.sin(angle) * travel * 0.45 - progress * height * 0.2
+            context.strokeStyle = 'rgba(255,255,85,' + (0.85 * (1 - progress)).toFixed(2) + ')'
+            context.lineWidth = 1.5
+            context.beginPath()
+            context.moveTo(px - 2, py)
+            context.lineTo(px + 2, py)
+            context.moveTo(px, py - 2)
+            context.lineTo(px, py + 2)
+            context.stroke()
+          }
+          context.restore()
+        }
+
         const drawDeskBatch = (batch) => {
           for (const desk of batch) {
           const { x, y, agent } = desk
@@ -4262,6 +4503,11 @@ window.__ModuleLoader__.load({
                 ? 'talk'
                 : waitAction || baseMode
           const edge = hexA(color, vacant ? 0.15 : 0.55)
+          const robotAnchor = vacant ? null : iso(x + deskW * 0.9, y + deskD + 0.06, 0)
+          const robotHeight = robotAnchor ? Math.max(36, s * 1.45) : 0
+          const dimmed = !vacant && ((legendFilter && legendFilter !== state) || (hover && !hoverIds.has(agent.id)))
+          context.save()
+          if (dimmed) context.globalAlpha *= 0.26
 
           // chair behind the desk
           solid(x + deskW * 0.3, y - 0.5, deskW * 0.4, 0.34, 0, 0.46, themed('rgba(20,20,20,1)', 'rgba(54,54,54,1)'), chairInk, themed('rgba(11,11,11,1)', 'rgba(64,64,64,1)'), hexA(color, 0.2))
@@ -4400,12 +4646,11 @@ window.__ModuleLoader__.load({
 
           // agent robot standing on the floor beside the desk
           if (!vacant && mode !== 'away') {
-            const robotAnchor = iso(x + deskW * 0.9, y + deskD + 0.06, 0)
             drawAgentGirl(
               context,
               now,
               robotAnchor,
-              Math.max(36, s * 1.45),
+              robotHeight,
               color,
               mode,
               desk.slot,
@@ -4486,7 +4731,14 @@ window.__ModuleLoader__.load({
           }
           context.restore()
 
-          if (!vacant) hitAreas.push({ id: agent.id, x: screenX - 8, y: screenY - 8, w: screenW + 16, h: screenH + 30 })
+          if (!vacant) {
+            hitAreas.push({ id: agent.id, x: screenX - 8, y: screenY - 8, w: screenW + 16, h: screenH + 30 })
+            if (hoverIds.has(agent.id)) drawHoverRing(robotAnchor, robotHeight, now, color)
+            if (state === 'err') drawSmokePuffs(robotAnchor, robotHeight, now, desk.slot)
+            const celebrateUntil = agentCelebrateUntil.get(agent.id)
+            if (celebrateUntil) drawCelebration(robotAnchor, robotHeight, now, celebrateUntil, desk.slot)
+          }
+          context.restore()
           }
         }
 
@@ -4817,10 +5069,10 @@ window.__ModuleLoader__.load({
         // layout-only changes are covered by the ResizeObserver below.
         measure()
       }
-      const onCanvasClick = (event) => {
+      const pickAt = (event) => {
         const state = readState()
-        if (!state || state.hidden) return
-        if (state.mode !== 'net' && state.mode !== 'office' && state.mode !== 'radar') return
+        if (!state || state.hidden) return null
+        if (state.mode !== 'net' && state.mode !== 'office' && state.mode !== 'radar') return null
         const rect = canvas.getBoundingClientRect()
         const x = event.clientX - rect.left
         const y = event.clientY - rect.top
@@ -4843,7 +5095,25 @@ window.__ModuleLoader__.load({
             best = area.id
           }
         }
+        return best
+      }
+      const onCanvasClick = (event) => {
+        const best = pickAt(event)
         if (best && typeof onPick === 'function') onPick(best)
+      }
+      const onCanvasMove = (event) => {
+        if (typeof onHover !== 'function') return
+        const best = pickAt(event)
+        if (best !== hoverAreaId) {
+          hoverAreaId = best
+          onHover(best)
+        }
+      }
+      const onCanvasLeave = () => {
+        if (hoverAreaId !== null) {
+          hoverAreaId = null
+          if (typeof onHover === 'function') onHover(null)
+        }
       }
 
       function observeStageSize() {
@@ -4863,12 +5133,16 @@ window.__ModuleLoader__.load({
       measure()
       observeStageSize()
       canvas.addEventListener('click', onCanvasClick)
+      canvas.addEventListener('pointermove', onCanvasMove)
+      canvas.addEventListener('pointerleave', onCanvasLeave)
       raf = window.requestAnimationFrame(draw)
       window.addEventListener('resize', onResize)
       return () => {
         window.cancelAnimationFrame(raf)
         window.removeEventListener('resize', onResize)
         canvas.removeEventListener('click', onCanvasClick)
+        canvas.removeEventListener('pointermove', onCanvasMove)
+        canvas.removeEventListener('pointerleave', onCanvasLeave)
         if (resizeObserver) {
           try {
             resizeObserver.disconnect()
@@ -4929,6 +5203,8 @@ window.__ModuleLoader__.load({
       const navRef = useRef(props.openConversation)
       navRef.current = props.openConversation
       const focusRef = useRef(null)
+      const hoverRef = useRef(null)
+      const legendRef = useRef(null)
       const modeRef = useRef('office')
       const cinemaRef = useRef(false)
       const prefsRef = useRef(loadPrefs())
@@ -4976,6 +5252,9 @@ window.__ModuleLoader__.load({
           stageSub: $('nxt-stage-sub'),
           stageTag: $('nxt-stage-tag'),
           tray: $('nxt-standby-tray'),
+          battle: $('nxt-battlebar'),
+          strip: $('nxt-agentstrip'),
+          legend: $('nxt-legend'),
         }
 
         const readView = () => {
@@ -5043,12 +5322,23 @@ window.__ModuleLoader__.load({
           }
           const liveAgents = view.agents.filter((agent) => !agent.held)
           const prefs = prefsRef.current
+          const hover = hoverRef.current
+          setHtml(refs.battle, battleHtml(view))
           setHtml(
             refs.wall,
             liveAgents.length > 0
-              ? liveAgents.slice(0, MAX_CARDS).map((agent) => cardHtml(agent, focusRef.current)).join('')
+              ? liveAgents.slice(0, MAX_CARDS).map((agent) => cardHtml(agent, focusRef.current, hover)).join('')
               : standbyHtml(view, prefs),
           )
+          if (refs.strip) {
+            const showStrip = liveAgents.length > MAX_CARDS && !focusRef.current
+            refs.strip.hidden = !showStrip
+            if (showStrip) setHtml(refs.strip, agentStripHtml(liveAgents, focusRef.current, hover))
+          }
+          if (refs.legend) {
+            setHtml(refs.legend, legendHtml(legendRef.current))
+            refs.legend.dataset.show = !focusRef.current && modeRef.current === 'office' ? '1' : '0'
+          }
           if (refs.wallHint) {
             refs.wallHint.textContent =
               liveAgents.length > MAX_CARDS
@@ -5069,6 +5359,7 @@ window.__ModuleLoader__.load({
           if (refs.stage) refs.stage.classList.toggle('nxt-net-on', !focusedAgent && mode === 'net')
           if (refs.stage) refs.stage.classList.toggle('nxt-hud-off', !hudOn)
           root.classList.toggle('nxt-focus-on', Boolean(focusedAgent))
+          root.classList.toggle('nxt-cold', Boolean(cinemaRef.current && prefs.cinemaSkin === 'cold'))
           setHtml(refs.analyze, focusedAgent ? analyzeHtml(focusedAgent) : '')
           if (refs.prefs) {
             refs.prefs.dataset.open = prefsOpenRef.current ? '1' : '0'
@@ -5146,6 +5437,8 @@ window.__ModuleLoader__.load({
             history: view.history || [],
             toolStats: view.toolStats || [],
             prefs,
+            hover: hoverRef.current,
+            legendFilter: legendRef.current,
           }
         }
 
@@ -5153,7 +5446,7 @@ window.__ModuleLoader__.load({
         const stopStage = startStage(canvas, () => stageStateRef.current, (id) => {
           focusRef.current = id
           paint()
-        })
+        }, setHover)
 
         const onStore = () => {
           const view = readView()
@@ -5192,6 +5485,13 @@ window.__ModuleLoader__.load({
             paint()
             return
           }
+          const legendButton = target.closest('[data-legend]')
+          if (legendButton) {
+            const picked = legendButton.getAttribute('data-legend')
+            legendRef.current = picked === 'all' || picked === legendRef.current ? null : picked
+            paint()
+            return
+          }
           if (target.closest('[data-cinema]')) {
             setCinema(!cinemaRef.current)
             return
@@ -5215,6 +5515,7 @@ window.__ModuleLoader__.load({
             else if (key === 'actions') next.actions = raw === '1'
             else if (key === 'visitPace') next.visitPace = raw
             else if (key === 'maxVisitors') next.maxVisitors = raw === '1' ? 1 : 2
+            else if (key === 'cinemaSkin') next.cinemaSkin = raw === 'cold' ? 'cold' : 'cozy'
             prefsRef.current = next
             savePrefs(next)
             paint()
@@ -5291,7 +5592,35 @@ window.__ModuleLoader__.load({
             paint()
           }
         }
+        function setHover(id) {
+          const next = id || null
+          if (hoverRef.current === next) return
+          hoverRef.current = next
+          stageStateRef.current = { ...stageStateRef.current, hover: next }
+          // Update attributes in place: repainting the whole card wall on every
+          // pointer move would replace the node under the cursor and flicker.
+          for (const item of root.querySelectorAll('[data-id]')) {
+            item.setAttribute('data-hover', item.getAttribute('data-id') === next ? '1' : '0')
+          }
+        }
+
+        const onRootHover = (event) => {
+          const target = event.target
+          if (!target || !target.closest) return
+          const item = target.closest('[data-id]')
+          if (item) setHover(item.getAttribute('data-id'))
+        }
+        const onRootOut = (event) => {
+          const target = event.target
+          if (!target || !target.closest) return
+          if (!target.closest('[data-id]')) return
+          const next = event.relatedTarget
+          if (next && next.closest && next.closest('[data-id]')) return
+          setHover(null)
+        }
         root.addEventListener('click', onRootClick)
+        root.addEventListener('mouseover', onRootHover)
+        root.addEventListener('mouseout', onRootOut)
         document.addEventListener('keydown', onKeyDown)
 
         return () => {
@@ -5299,6 +5628,8 @@ window.__ModuleLoader__.load({
           unsubscribe()
           window.clearInterval(clockTimer)
           root.removeEventListener('click', onRootClick)
+          root.removeEventListener('mouseover', onRootHover)
+          root.removeEventListener('mouseout', onRootOut)
           document.removeEventListener('keydown', onKeyDown)
         }
       }, [monitor])

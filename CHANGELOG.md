@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.0 — 2026-11-06
+
+### Added
+
+- Battle bar above the stage: `ACTIVE / WAITING / ERRORS / SYNC / TPS / DESKS` with live counts.
+- Clickable `FILTER` legend for RUN / WAIT / SYNC / ERR; matching units stay lit, others dim.
+- Hover lineage highlight: hovering a card, strip chip or desk highlights the same session and topology parent/child.
+- Horizontal agent strip for 9+ live units; the card wall stays readable and overflow is not hidden.
+- `CINEMA` briefing layout with larger battle bar/legend and optional `CINEMA SKIN: COZY / COLD` in `PREFS`.
+- Prioritized `LIVE FEED` ticker: errors, waiting units and completed units before ordinary log lines.
+- Character micro-actions: error smoke puffs and a short sparkle burst when a unit leaves RUN.
+
 ## 0.5.0 — 2026-11-06
 
 ### Added

@@ -1,6 +1,6 @@
 {
   "name": "dsh-agent-deck",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "description": "Agent Deck: cyberpunk HUD console that watches every working agent's thinking, tool calls and output live.",

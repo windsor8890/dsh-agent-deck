@@ -143,6 +143,9 @@ check('prefs normalization clamps values', () => {
   assert(parsed.visitPace === 'chill', 'invalid pace must fall back to chill')
   assert(parsed.maxVisitors === 2, 'invalid maxVisitors must fall back to 2')
   assert(normalizePrefs({ maxVisitors: 1 }).maxVisitors === 1, 'maxVisitors=1 not preserved')
+  assert(normalizePrefs(null).cinemaSkin === DEFAULT_PREFS.cinemaSkin, 'cinema skin must default')
+  assert(normalizePrefs({ cinemaSkin: 'cold' }).cinemaSkin === 'cold', 'cold cinema skin not preserved')
+  assert(normalizePrefs({ cinemaSkin: 'bogus' }).cinemaSkin === 'cozy', 'invalid cinema skin must fall back')
   return 'defaults + clamps'
 })
 
