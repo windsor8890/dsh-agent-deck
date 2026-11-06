@@ -17,22 +17,30 @@
 - Four-frame whale-girl action loop GIF (idle / working / slacking / gaming) in the README.
 - Two transparent working keyframes embedded as WebP: the `busy` pose now shows a subtle
   typing loop in Canvas while the rest of the states keep the static generated sprites.
-- Layout refresh: `AGENT UNITS` now sits across the bottom (24% height) as a horizontal
-  card strip, `TELEMETRY` sits at the top-right, and the office stage fills the remaining
+- Layout refresh: `AGENT UNITS` sits across the bottom (20% height) as a horizontal
+  filmstrip, `TELEMETRY` sits at the top-right, and the office stage fills the remaining
   top-left space with a wider desk layout.
 - Office backdrop now stretches the back wall and floor grid across the full stage width;
   the fake isometric side wall is removed, so no paper-white strips remain at the sides.
 - The two wall monitors are anchored to the visible top-right wall (below the HUD/legend)
   instead of floating over the stage controls.
 - Added a decorative `CHIEF DESK / SUPERVISOR` teacher-style podium on the right side,
-  between the two desk rows; a fixed gold-tinted resident supervisor occupies it. It is
-  not one of the 8 agent seats and does not consume a session slot.
+  between the two desk rows. When topology has a root/parent agent it takes the podium;
+  otherwise a fixed gold-tinted resident supervisor fills it. It is not one of the 8 agent
+  seats and does not consume a session slot.
 - Shifted the 8 agent desks slightly left and moved the podium further right, leaving a
   clear walkway and visual gap between the last desk column and the supervisor.
-- Compact stage HUD: only the essential aggregate rows, a shorter sparkline and fewer
-  unit/tool/call rows, leaving more room for the office floor.
-- Agent cards grow to fill the strip when there are one or two units; a single unit uses
-  a multi-column wide card so the bottom area does not stay half empty.
+- Compact stage HUD: only throughput trend, tool mix and recent calls; no repeated
+  ACTIVE/TOOLS/ERRORS counters.
+- KPI de-duplication: the global top bar keeps only LIVE/AGENTS/CLOCK; the stage battle bar
+  owns the state counters.
+- Telemetry rail now has a persistent clickable ATTENTION queue plus collapsible
+  RUNTIME and SYSTEM groups; low-priority file/model/config/log sections are folded away.
+- Bottom filmstrip cards are compact (state, TPS, current tool, short think line); full
+  THINK/ACT/OUT detail moves to focus/ANALYZE.
+- When fewer than three agents are live, a ROOM SUMMARY card fills the remaining filmstrip
+  width instead of stretching one giant agent card.
+- The state filter now also dims non-matching filmstrip cards and unit rows in telemetry.
 
 ## 0.5.0 — 2026-11-06
 

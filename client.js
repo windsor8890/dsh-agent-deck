@@ -1240,7 +1240,7 @@ window.__ModuleLoader__.load({
 
 .nxt-body{display:grid; gap:9px; padding:9px 11px; min-height:0;
   grid-template-columns:minmax(0,1fr) minmax(210px,22%);
-  grid-template-rows:minmax(0,1fr) minmax(140px,24%);
+  grid-template-rows:minmax(0,1fr) minmax(130px,20%);
   grid-template-areas:"stage rail" "wall wall";}
 .nxt-panel{position:relative; min-height:0; min-width:0; display:flex; flex-direction:column;
   border:1px solid var(--nxt-line);
@@ -1256,24 +1256,24 @@ window.__ModuleLoader__.load({
 
 .nxt-wall{overflow:auto; padding:8px; display:flex; flex-direction:column; gap:8px; min-height:0; flex:1 1 auto; scrollbar-width:thin}
 .nxt-wallpanel .nxt-wall{flex-direction:row; overflow-x:auto; overflow-y:hidden; align-items:stretch}
-.nxt-wall .nxt-card{flex:1 0 clamp(230px, 22vw, 320px); min-width:230px; min-height:0}
+.nxt-wall .nxt-card{flex:0 0 clamp(260px, 24vw, 340px); min-width:260px; min-height:0}
 .nxt-wallpanel .nxt-wall .nxt-card{height:auto; min-height:0}
-/* One agent: use the full bottom width as a compact multi-column card instead of
-   stretching a narrow vertical card and leaving the right side empty. */
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident){display:grid; gap:4px 14px; padding:8px 10px;
-  grid-template-columns:minmax(210px,1.1fr) minmax(180px,1fr) minmax(180px,1fr);
-  grid-template-rows:auto auto minmax(0,1fr) auto;
-  grid-template-areas:"head head head" "meta spark spark" "think act out" "foot foot foot"}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-chead{grid-area:head}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-cmeta{grid-area:meta}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-cspark{grid-area:spark; align-self:center}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec:nth-child(4){grid-area:think}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec:nth-child(5){grid-area:act}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec:nth-child(6){grid-area:out}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-cfoot{grid-area:foot}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec{margin-top:0; padding-top:0; min-width:0; border-top:1px solid rgba(85,255,255,0.08)}
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec > .nxt-stream,
-.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec > .nxt-act{justify-content:flex-start}
+.nxt-film[data-filtered="1"]{opacity:.32}
+.nxt-cfilm{display:flex; flex-direction:column; gap:3px; flex:1 1 auto; min-height:0; margin-top:4px; overflow:hidden}
+.nxt-cfrow{display:flex; align-items:baseline; gap:6px; min-width:0; white-space:nowrap; overflow:hidden; font-size:9px; line-height:1.4}
+.nxt-cflbl{flex:none; font-size:7px; letter-spacing:.14em; color:#55ffff}
+.nxt-cfval{min-width:0; overflow:hidden; text-overflow:ellipsis; color:#aaaaaa}
+.nxt-film-summary{flex:1 0 280px; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:7px; padding:9px 11px;
+  border-left-color:rgba(255,255,85,0.45)}
+.nxt-summary-grid{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px}
+.nxt-summary-kv{display:flex; flex-direction:column; gap:1px; min-width:0; padding:3px 5px; border:1px solid rgba(85,255,255,0.12); background:rgba(10,10,10,0.4)}
+.nxt-summary-kv span{font-size:7px; letter-spacing:.12em; color:#555555; white-space:nowrap}
+.nxt-summary-kv b{font-size:12px; color:#55ffff; font-weight:600; font-variant-numeric:tabular-nums}
+.nxt-summary-kv b.hot{color:#ff5555}
+.nxt-summary-note{display:flex; align-items:center; gap:6px; min-width:0; flex-wrap:wrap; font-size:8px; color:#555555}
+.nxt-summary-note b{color:#ffffff; font-weight:600; margin-right:8px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:38%}
+.nxt-summary-bar{height:3px; background:rgba(85,255,255,0.08); overflow:hidden}
+.nxt-summary-bar i{display:block; height:100%; background:linear-gradient(90deg,#55ffff,#ffff55)}
 .nxt-wall::-webkit-scrollbar{width:6px; height:6px}
 .nxt-wall::-webkit-scrollbar-thumb{background:rgba(85,255,255,0.25)}
 .nxt-card{position:relative; border:0; border-left:2px solid rgba(255,255,255,0.14); background:linear-gradient(180deg, rgba(10,10,10,0.94), rgba(0,0,0,0.94));
@@ -1377,6 +1377,7 @@ window.__ModuleLoader__.load({
 .nxt-analyze-on .nxt-stage-hud{display:none}
 .nxt-net-on .nxt-stage-hud{display:none}
 .nxt-hud-off .nxt-stage-hud{display:none}
+.nxt-shud[data-pos="tr"]{display:none}
 .nxt-shud{position:relative; flex:1 1 0; min-width:0; min-height:0; overflow:hidden; padding:5px 7px;
   background:rgba(0,0,0,0.78); border:0;
   font-size:8.5px; color:#aaaaaa; font-variant-numeric:tabular-nums; line-height:1.4}
@@ -1573,6 +1574,32 @@ window.__ModuleLoader__.load({
 .nxt-cinema .nxt-wallpanel,.nxt-cinema .nxt-railpanel{display:none}
 .nxt-cinema .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); grid-template-areas:"stage"}
 
+/* Right rail: persistent attention queue + collapsible detail groups. */
+.nxt-attn{display:flex; flex-direction:column; gap:3px; margin-bottom:7px; padding:6px 7px;
+  border:1px solid rgba(255,255,255,0.14); background:rgba(10,10,10,0.55)}
+.nxt-attn-h{display:flex; align-items:center; justify-content:space-between; margin-bottom:2px;
+  font-size:8px; letter-spacing:.18em; color:#ffff55}
+.nxt-attn-h span:last-child{color:#555555; letter-spacing:.06em}
+.nxt-attn-ok{border-color:rgba(85,255,255,0.16)}
+.nxt-attn-ok b{font-size:9px; letter-spacing:.18em; color:#55ff55}
+.nxt-attn-row{display:flex; align-items:center; gap:5px; width:100%; min-width:0; padding:3px 4px; cursor:pointer;
+  border:1px solid rgba(255,255,255,0.10); background:rgba(0,0,0,0.3); text-align:left;
+  font:600 8px/1.2 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.05em}
+.nxt-attn-row:hover{border-color:var(--nxt-frame)}
+.nxt-attn-tag{flex:none; max-width:62px; overflow:hidden; text-overflow:ellipsis}
+.nxt-attn-state{flex:none; font-size:7px; color:#ffff55}
+.nxt-attn-row[data-state="err"] .nxt-attn-state{color:#ff5555}
+.nxt-attn-name{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; color:#aaaaaa}
+.nxt-group{margin-bottom:7px; border:1px solid rgba(85,255,255,0.10); background:rgba(0,0,0,0.28)}
+.nxt-group-h{display:flex; align-items:center; justify-content:space-between; width:100%; cursor:pointer; padding:5px 7px;
+  border:0; background:transparent; text-align:left; font:600 8px/1.2 "JetBrains Mono",Consolas,monospace; letter-spacing:.16em; color:#55ffff}
+.nxt-group-h:hover{background:rgba(85,255,255,0.06)}
+.nxt-group-h span:last-child{color:#555555; letter-spacing:.08em}
+.nxt-group[data-open="1"] .nxt-group-h{border-bottom:1px solid rgba(85,255,255,0.12)}
+.nxt-group[data-open="0"] .nxt-group-body{display:none}
+.nxt-group .nxt-block{margin:5px 6px}
+.nxt-dimmed{opacity:.3}
+
 .nxt-analyze{display:none; position:absolute; inset:0; padding:8px; gap:8px;
   grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr))}
 .nxt-analyze-close{position:absolute; top:8px; right:8px; z-index:6; min-width:84px; min-height:24px; padding:6px 10px; cursor:pointer;
@@ -1641,11 +1668,11 @@ window.__ModuleLoader__.load({
 .nxt-todo[data-done="0"] i{color:#55ffff}
 
 @media (max-width: 1180px){
-  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(140px,24%); grid-template-areas:"stage" "wall"}
+  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(130px,20%); grid-template-areas:"stage" "wall"}
   .nxt-railpanel{display:none}
 }
 @media (max-width: 820px){
-  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(120px,24%); grid-template-areas:"stage" "wall"}
+  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(120px,20%); grid-template-areas:"stage" "wall"}
   .nxt-wall .nxt-card{flex-basis:220px}
 }
 /* Host theme follower: the HUD artwork is authored for a black canvas, so the
@@ -1666,11 +1693,6 @@ window.__ModuleLoader__.load({
     <div class="nxt-chips">
       <span class="nxt-chip nxt-live"><i class="nxt-dot"></i>LIVE</span>
       <span class="nxt-chip">AGENTS <b id="nxt-c-count">0</b></span>
-      <span class="nxt-chip" title="EST: chars of reasoning + output in the last 3s / 3s / 3.5; not a model token count">THRUPUT <b id="nxt-c-tps">0.0</b><i>est t/s</i></span>
-      <span class="nxt-chip">CTX <i class="nxt-bar nxt-bar-wide"><i id="nxt-c-ctxbar" style="width:0%"></i></i><b id="nxt-c-ctx">—</b></span>
-      <span class="nxt-chip">PLAN <i class="nxt-bar nxt-bar-wide"><i id="nxt-c-planbar" style="width:0%"></i></i><b id="nxt-c-plan">—</b></span>
-      <span class="nxt-chip" id="nxt-c-alertchip">ALERTS <b id="nxt-c-alerts">0</b></span>
-      <span class="nxt-chip">TOOLS <b id="nxt-c-tools">0</b></span>
     </div>
     <div class="nxt-clock"><span id="nxt-c-localtime">--:--:--</span><em>LOCAL</em></div>
     <button class="nxt-back" type="button" data-nav="conversation" title="Back to conversation" aria-label="Back to conversation">×</button>
@@ -1851,26 +1873,21 @@ window.__ModuleLoader__.load({
       return '<svg class="nxt-spark-svg" viewBox="0 0 46 12" preserveAspectRatio="none">' + rows + '</svg>'
     }
 
-    function cardHtml(agent, focused, hovered) {
-      const tools = agent.tools.length > 0 ? agent.tools.map(toolHtml).join('') : '<div class="nxt-tool"><span class="nxt-ta">—</span></div>'
-      const think = agent.think
-        ? '<div class="nxt-think nxt-stream"><span>' + esc(tail(agent.think, THINK_CAP)) + '</span></div>'
-        : '<div class="nxt-think nxt-stream"><em class="nxt-dim">— no reasoning channel —</em></div>'
-      const out = agent.out
-        ? '<div class="nxt-out nxt-stream"><span>' + esc(tail(agent.out, OUT_CAP)) + '</span></div>'
-        : '<div class="nxt-out nxt-stream"><em class="nxt-dim">standby…</em></div>'
+    function cardHtml(agent, focused, hovered, filtered) {
+      const currentTool = agent.tools.length > 0 ? agent.tools[agent.tools.length - 1] : null
       const ctxMeta =
         agent.ctx >= 0
           ? 'CTX <i class="nxt-bar"><i style="width:' + agent.ctx + '%"></i></i> ' + agent.ctx + '%'
           : 'CTX ' + fmtNum(agent.ctxTokens) + ' tok'
       return (
-        '<div class="nxt-card" data-state="' +
+        '<div class="nxt-card nxt-film" data-state="' +
         esc(agent.state) +
         '" data-id="' +
         esc(agent.id) +
         '"' +
         (focused === agent.id ? ' data-focused="1"' : '') +
         (hovered === agent.id ? ' data-hover="1"' : '') +
+        (filtered && filtered !== agent.state ? ' data-filtered="1"' : '') +
         ' title="' +
         esc(agent.name + (agent.cwd ? '\n' + agent.cwd : '') + '\nCLICK: FOCUS · ↗: OPEN SESSION') +
         '">' +
@@ -1900,14 +1917,13 @@ window.__ModuleLoader__.load({
         '<span class="nxt-cspark-graph">' +
         sparkMarkup(agent.tpsHistory, agent.color, 18) +
         '</span></div>' +
-        '<div class="nxt-sec"><span class="nxt-lbl">THINK</span>' +
-        think +
-        '</div>' +
-        '<div class="nxt-sec"><span class="nxt-lbl">ACT</span><div class="nxt-act">' +
-        tools +
-        '</div></div>' +
-        '<div class="nxt-sec"><span class="nxt-lbl">OUT</span>' +
-        out +
+        '<div class="nxt-cfilm">' +
+        '<div class="nxt-cfrow"><span class="nxt-cflbl">ACT</span><span class="nxt-cfval">' +
+        esc(currentTool ? currentTool.name + (currentTool.arg ? ' · ' + currentTool.arg : '') : 'waiting') +
+        '</span></div>' +
+        '<div class="nxt-cfrow"><span class="nxt-cflbl">THINK</span><span class="nxt-cfval">' +
+        esc(agent.think ? tail(agent.think, 180) : '— no reasoning channel —') +
+        '</span></div>' +
         '</div>' +
         '<div class="nxt-cfoot"><span>T' +
         agent.turn +
@@ -1920,6 +1936,34 @@ window.__ModuleLoader__.load({
         ' ERR</span><span>' +
         fmtDur(agent.elapsed) +
         '</span></div>' +
+        '</div>'
+      )
+    }
+
+    function roomSummaryHtml(view) {
+      const live = ((view && view.agents) || []).filter((agent) => !agent.held)
+      const totals = (view && view.totals) || {}
+      const waiting = live.filter((agent) => agent.state === 'wait').length
+      const errors = live.filter((agent) => agent.state === 'err').length
+      const seated = live.filter((agent) => agent.deskSlot >= 0).length
+      const standby = live.filter((agent) => agent.deskSlot < 0).length
+      const lastCall = (view.recentCalls || [])[view.recentCalls.length - 1]
+      return (
+        '<div class="nxt-card nxt-film-summary">' +
+        '<div class="nxt-chead"><span class="nxt-cidx">ROOM</span><span class="nxt-cname">07 / SUMMARY</span><span class="nxt-cstate">' +
+        (errors > 0 ? 'ATTENTION' : waiting > 0 ? 'WAITING' : 'CLEAR') + '</span></div>' +
+        '<div class="nxt-summary-grid">' +
+        '<div class="nxt-summary-kv"><span>SEATED</span><b>' + seated + '/8</b></div>' +
+        '<div class="nxt-summary-kv"><span>STANDBY</span><b>' + standby + '</b></div>' +
+        '<div class="nxt-summary-kv"><span>WAITING</span><b>' + waiting + '</b></div>' +
+        '<div class="nxt-summary-kv"><span>ERRORS</span><b class="' + (errors > 0 ? 'hot' : '') + '">' + errors + '</b></div>' +
+        '<div class="nxt-summary-kv"><span>TPS</span><b>' + (totals.tpsDisplay !== undefined ? totals.tpsDisplay : totals.tps || 0).toFixed(1) + '</b></div>' +
+        '</div>' +
+        '<div class="nxt-summary-note">' +
+        '<span>SUPERVISOR</span><b>' + (live.length > 1 ? 'ASSIGNED' : 'RESIDENT') + '</b>' +
+        '<span>LAST</span><b>' + esc(lastCall ? lastCall.name + ' · ' + fmtMs(lastCall.ms) : 'no calls yet') + '</b>' +
+        '</div>' +
+        '<div class="nxt-summary-bar"><i style="width:' + Math.min(100, Math.max(2, Math.round((live.length / 8) * 100))) + '%"></i></div>' +
         '</div>'
       )
     }
@@ -2183,12 +2227,6 @@ window.__ModuleLoader__.load({
       const peak = Math.max(1, ...series)
       const tl =
         '<div class="nxt-shud-h"><span>AGGREGATE · THROUGHPUT (EST)</span><span>' + stamp + '</span></div>' +
-        '<div class="nxt-shud-grid">' +
-        kvRow('ACTIVE', totals.count || 0) +
-        kvRow('TURNS', totals.turns || 0) +
-        kvRow('TOOLS', totals.tools || 0) +
-        kvRow('ERRORS', totals.errors || 0) +
-        '</div>' +
         '<div class="nxt-shud-spark">' + sparkMarkup(series, '#55ffff', 26) + '</div>' +
         '<div class="nxt-shud-line"><span class="t">NOW</span><span class="nm">' +
         (totals.tpsDisplay || totals.tps || 0).toFixed(1) + ' EST T/S</span>' +
@@ -2248,7 +2286,7 @@ window.__ModuleLoader__.load({
             )
           })
           .join('') || '<div class="nxt-shud-line"><span class="nm">no calls in window</span></div>')
-      return { tl, tr, bl, br }
+      return { tl, tr: '', bl, br }
     }
 
     function ratioSpark(history) {
@@ -2269,8 +2307,25 @@ window.__ModuleLoader__.load({
       return '<div class="nxt-block"><div class="nxt-bh"><span>' + title + '</span><span>' + hint + '</span></div>' + body + '</div>'
     }
 
-    function railHtml(view) {
+    function railHtml(view, filter, open) {
       const totals = view.totals
+      const liveAgents = (view.agents || []).filter((agent) => !agent.held)
+      const attentionAgents = liveAgents.filter((agent) => agent.state === 'wait' || agent.state === 'err')
+      const attention = attentionAgents.length
+        ? '<div class="nxt-attn"><div class="nxt-attn-h"><span>ATTENTION</span><span>' + attentionAgents.length + '</span></div>' +
+          attentionAgents
+            .slice(0, 4)
+            .map(
+              (agent) =>
+                '<button type="button" class="nxt-attn-row" data-id="' + esc(agent.id) + '" data-state="' + esc(agent.state) + '">' +
+                '<span class="nxt-attn-tag" style="color:' + esc(agent.color) + '">' + esc(agent.tag) + '</span>' +
+                '<span class="nxt-attn-state">' + (agent.state === 'err' ? 'ERR' : agent.pending ? 'INPUT' : 'WAIT') + '</span>' +
+                '<span class="nxt-attn-name">' + esc(agent.name || agent.id) + '</span></button>',
+            )
+            .join('') +
+          '</div>'
+        : '<div class="nxt-attn nxt-attn-ok"><div class="nxt-attn-h"><span>ATTENTION</span><span>0</span></div><b>ALL CLEAR</b></div>'
+      const dimClass = (agent) => (filter && agent.state !== filter ? ' nxt-dimmed' : '')
       const history = view.history || []
       const peakTps = Math.max(1, history.length > 0 ? Math.max.apply(null, history) : 0)
       const nowTps = history.length > 0 ? history[history.length - 1] : totals.tps
@@ -2304,7 +2359,7 @@ window.__ModuleLoader__.load({
             .slice(0, DESK_COUNT)
             .map(
               (a) =>
-                '<div class="nxt-unit-row"><span class="nxt-ut" style="color:' + esc(a.color) + '">' + esc(a.tag) + '</span>' +
+                '<div class="nxt-unit-row' + dimClass(a) + '"><span class="nxt-ut" style="color:' + esc(a.color) + '">' + esc(a.tag) + '</span>' +
                 '<span class="nxt-us" style="color:' + (STATE_COLOR[a.state] || STATE_COLOR.sync) + '">' + stateLabel(a.state) + '</span>' +
                 '<span class="nxt-un">' + esc(a.name || '') + '</span>' +
                 '<span class="nxt-unit-viz">' + unitViz(a, a.deskSlot) + '</span>' +
@@ -2468,8 +2523,14 @@ window.__ModuleLoader__.load({
           '<div class="nxt-sys"><span>UNITS TRACKED</span><b>' + totals.count + '</b></div>',
       )
 
+      const groupBox = (key, title, hint, body) =>
+        '<div class="nxt-group" data-open="' + (open && open[key] ? '1' : '0') + '">' +
+        '<button type="button" class="nxt-group-h" data-rail-group="' + key + '"><span>' + title + '</span><span>' + hint + '</span></button>' +
+        '<div class="nxt-group-body">' + body + '</div></div>'
       return (
-        global + thruput + units + standby + ctx + toolMixBlock + latencyBlock + phase + filesBlock + modelsBlock + configBlock + alerts + logBlock + system
+        attention +
+        groupBox('runtime', 'RUNTIME', 'LIVE', global + thruput + units + standby + ctx + toolMixBlock) +
+        groupBox('system', 'SYSTEM', 'DETAIL', latencyBlock + phase + filesBlock + modelsBlock + configBlock + alerts + logBlock + system)
       )
     }
 
@@ -3822,6 +3883,11 @@ window.__ModuleLoader__.load({
     // long hair + lace headdress + whale-fin ears + whale tail + navy maid dress with a whale apron.
       function drawOffice(state, now, areaW, areaH) {
         const agents = state.agents || []
+        const topologyEdges = (state.topology && state.topology.edges) || []
+        const liveForChief = agents.filter((agent) => !agent.held)
+        const parentIds = new Set(topologyEdges.map((edge) => edge.from))
+        const childIds = new Set(topologyEdges.map((edge) => edge.to))
+        const supervisorAgent = liveForChief.find((agent) => parentIds.has(agent.id) && !childIds.has(agent.id)) || null
         const totals = state.totals || {}
         const history = state.history || []
         const toolStats = state.toolStats || []
@@ -3897,16 +3963,16 @@ window.__ModuleLoader__.load({
         // chosen as pre-filter values that invert into a paper-light office instead
         // of a white-on-white blur.
         const themed = (dark, light) => (activeScheme === 'light' ? light : dark)
-        const wallInk = themed('rgba(11,11,11,0.99)', 'rgba(30,30,30,0.99)')
-        const wallTrim = themed('rgba(20,20,20,0.99)', 'rgba(42,42,42,0.99)')
-        const floorInk = themed('rgba(4,4,4,1)', 'rgba(17,17,17,1)')
-        const topInk = themed('rgba(27,27,27,1)', 'rgba(56,56,56,1)')
-        const topEdge = themed('rgba(48,48,48,1)', 'rgba(118,118,118,1)')
-        const frontInk = themed('rgba(13,13,13,1)', 'rgba(46,46,46,1)')
-        const sideInk = themed('rgba(9,9,9,1)', 'rgba(66,66,66,1)')
-        const legInk = themed('rgba(19,19,19,1)', 'rgba(54,54,54,1)')
-        const chairInk = themed('rgba(15,15,15,1)', 'rgba(60,60,60,1)')
-        const panelInk = themed('rgba(2,2,2,0.98)', 'rgba(32,32,32,0.98)')
+        const wallInk = themed('rgba(11,11,11,0.99)', 'rgba(18,18,18,0.99)')
+        const wallTrim = themed('rgba(20,20,20,0.99)', 'rgba(30,30,30,0.99)')
+        const floorInk = themed('rgba(4,4,4,1)', 'rgba(10,10,10,1)')
+        const topInk = themed('rgba(27,27,27,1)', 'rgba(105,105,105,1)')
+        const topEdge = themed('rgba(48,48,48,1)', 'rgba(150,150,150,1)')
+        const frontInk = themed('rgba(13,13,13,1)', 'rgba(95,95,95,1)')
+        const sideInk = themed('rgba(9,9,9,1)', 'rgba(130,130,130,1)')
+        const legInk = themed('rgba(19,19,19,1)', 'rgba(85,85,85,1)')
+        const chairInk = themed('rgba(15,15,15,1)', 'rgba(95,95,95,1)')
+        const panelInk = themed('rgba(2,2,2,0.98)', 'rgba(45,45,45,0.98)')
 
         const quad = (points, fill, stroke) => {
           context.beginPath()
@@ -4265,6 +4331,7 @@ window.__ModuleLoader__.load({
         for (let col = 0; col < DESK_COLS; col++) slots.push({ row: 0, col })
         const slotAgent = new Map()
         for (const agent of agents) {
+          if (supervisorAgent && agent.id === supervisorAgent.id) continue
           const seat = agent.deskSlot
           if (!Number.isInteger(seat) || seat < 0 || seat >= TOTAL_DESKS) continue
           const slot = slots[seat]
@@ -4523,7 +4590,7 @@ window.__ModuleLoader__.load({
 
         // A distinct command desk in the middle aisle: the supervisor/chief sits
         // between the two agent rows instead of occupying one of the 8 unit seats.
-        const drawSupervisorStation = () => {
+        const drawSupervisorStation = (chief) => {
           // A teacher-style podium on the right side, between the two desk rows:
           // it stays out of the center aisle and does not take a numbered seat.
           const x = 11.55
@@ -4546,19 +4613,35 @@ window.__ModuleLoader__.load({
           // chair behind the command desk
           solid(x + w * 0.28, y - 0.52, w * 0.44, 0.3, 0, 0.48, themed('rgba(22,22,18,1)', 'rgba(52,50,42,1)'), themed('rgba(16,16,12,1)', 'rgba(62,60,50,1)'), themed('rgba(12,12,9,1)', 'rgba(72,70,58,1)'), hexA(gold, 0.24))
           solid(x + w * 0.28, y - 0.58, w * 0.44, 0.08, 0.48, 0.98, themed('rgba(25,25,20,1)', 'rgba(58,56,46,1)'), themed('rgba(16,16,12,1)', 'rgba(70,68,56,1)'), themed('rgba(12,12,9,1)', 'rgba(82,78,64,1)'), hexA(gold, 0.35))
-          // resident supervisor: a gold-tinted whale-girl behind the podium,
-          // drawn before the desk so the desktop occludes her legs.
-          drawAgentGirl(
-            context,
-            now,
-            iso(x + w / 2, y - 0.02, 0),
-            Math.max(38, s * 1.25),
-            '#ffb84d',
-            'idle',
-            0.72,
-            u,
-            { reduced: reduceMotion },
-          )
+          // Supervisor: use the topology root/parent when one exists; otherwise
+          // keep a fixed gold resident as the fallback NPC.
+          const supervisorAnchor = iso(x + w / 2, y - 0.02, 0)
+          if (chief) {
+            const chiefMode = chief.state === 'run' ? 'busy' : chief.state === 'err' ? 'error' : 'idle'
+            drawAgentGirl(
+              context,
+              now,
+              supervisorAnchor,
+              Math.max(38, s * 1.25),
+              chief.color || '#ffb84d',
+              chiefMode,
+              0.72,
+              u,
+              { reduced: reduceMotion },
+            )
+          } else {
+            drawAgentGirl(
+              context,
+              now,
+              supervisorAnchor,
+              Math.max(38, s * 1.25),
+              '#ffb84d',
+              'idle',
+              0.72,
+              u,
+              { reduced: reduceMotion },
+            )
+          }
           // desk
           solid(x, y, w, d, 0, z, themed('rgba(30,30,24,1)', 'rgba(72,70,56,1)'), themed('rgba(18,18,14,1)', 'rgba(58,56,46,1)'), themed('rgba(12,12,9,1)', 'rgba(78,75,60,1)'), hexA(gold, 0.55))
           for (const [lx, ly] of [
@@ -4612,7 +4695,7 @@ window.__ModuleLoader__.load({
           context.textAlign = 'center'
           context.fillStyle = 'rgba(255,255,85,0.92)'
           context.font = '600 8px "JetBrains Mono", ui-monospace, monospace'
-          context.fillText('CHIEF DESK', mark.x, mark.y)
+          context.fillText(chief ? 'CHIEF ' + chief.tag : 'CHIEF DESK', mark.x, mark.y)
           context.restore()
         }
 
@@ -4906,7 +4989,7 @@ window.__ModuleLoader__.load({
           }
         }
         drawDeskBatch(desks.filter((desk) => desk.slot < DESK_COLS))
-        drawSupervisorStation()
+        drawSupervisorStation(supervisorAgent)
         for (const visit of officeVisits) if (visit.worldY < pitchY) drawVisitor(visit)
         drawDeskBatch(desks.filter((desk) => desk.slot >= DESK_COLS))
         for (const visit of officeVisits) if (visit.worldY >= pitchY) drawVisitor(visit)
@@ -5340,6 +5423,7 @@ window.__ModuleLoader__.load({
       const cinemaRef = useRef(false)
       const prefsRef = useRef(loadPrefs())
       const prefsOpenRef = useRef(false)
+      const railOpenRef = useRef({ runtime: true, system: false })
       const stageStateRef = useRef({
         agents: [],
         totals: { tps: 0 },
@@ -5359,14 +5443,6 @@ window.__ModuleLoader__.load({
         const $ = (id) => root.querySelector('#' + id)
         const refs = {
           count: $('nxt-c-count'),
-          tps: $('nxt-c-tps'),
-          alerts: $('nxt-c-alerts'),
-          alertChip: $('nxt-c-alertchip'),
-          tools: $('nxt-c-tools'),
-          ctxBar: $('nxt-c-ctxbar'),
-          ctxValue: $('nxt-c-ctx'),
-          planBar: $('nxt-c-planbar'),
-          planValue: $('nxt-c-plan'),
           clock: $('nxt-c-localtime'),
           wall: $('nxt-wall'),
           wallHint: $('nxt-wallhint'),
@@ -5425,41 +5501,16 @@ window.__ModuleLoader__.load({
           if (!view) return
           if (refs.clock) refs.clock.textContent = fmtClock(new Date())
           if (refs.count) refs.count.textContent = String(view.totals.count)
-          if (refs.tps) refs.tps.textContent = (view.totals.tpsDisplay || view.totals.tps).toFixed(1)
-          if (refs.alerts) refs.alerts.textContent = String(view.alerts.length)
-          if (refs.tools) refs.tools.textContent = String(view.totals.tools)
-          // aggregate context budget: only units with a known window contribute
-          let ctxWindowSum = 0
-          let ctxTokenSum = 0
-          for (const agent of view.agents) {
-            if (agent.cw > 0) {
-              ctxWindowSum += agent.cw
-              ctxTokenSum += agent.ctxTokens
-            }
-          }
-          if (refs.ctxBar && refs.ctxBar.style) {
-            const pct = ctxWindowSum > 0 ? clamp(Math.round((ctxTokenSum / ctxWindowSum) * 100), 0, 100) : 0
-            refs.ctxBar.style.width = pct + '%'
-            if (refs.ctxValue) refs.ctxValue.textContent = ctxWindowSum > 0 ? pct + '%' : fmtNum(view.totals.ctxTokens || 0)
-          }
-          const plan = view.plan || { done: 0, total: 0 }
-          if (refs.planBar && refs.planBar.style) {
-            refs.planBar.style.width = (plan.total > 0 ? Math.round((plan.done / plan.total) * 100) : 0) + '%'
-            if (refs.planValue) refs.planValue.textContent = plan.total > 0 ? plan.done + '/' + plan.total : '—'
-          }
-          if (refs.alertChip) {
-            const bad = view.alerts.length > 0 || view.totals.errors > 0
-            refs.alertChip.className = 'nxt-chip' + (bad ? ' nxt-bad' : '')
-          }
           const liveAgents = view.agents.filter((agent) => !agent.held)
           const prefs = prefsRef.current
           const hover = hoverRef.current
           setHtml(refs.battle, battleHtml(view))
+          const filmSummary = liveAgents.length < 3 ? roomSummaryHtml(view) : ''
           setHtml(
             refs.wall,
-            liveAgents.length > 0
-              ? liveAgents.slice(0, MAX_CARDS).map((agent) => cardHtml(agent, focusRef.current, hover)).join('')
-              : standbyHtml(view, prefs),
+            (liveAgents.length > 0
+              ? liveAgents.slice(0, MAX_CARDS).map((agent) => cardHtml(agent, focusRef.current, hover, legendRef.current)).join('')
+              : standbyHtml(view, prefs)) + filmSummary,
           )
           if (refs.strip) {
             const showStrip = liveAgents.length > MAX_CARDS && !focusRef.current
@@ -5478,7 +5529,7 @@ window.__ModuleLoader__.load({
                   ? 'LIVE FEED · ' + liveAgents.length
                   : 'RESIDENT · STANDBY'
           }
-          setHtml(refs.rail, railHtml(view))
+          setHtml(refs.rail, railHtml(view, legendRef.current, railOpenRef.current))
           setHtml(refs.ticker, tickerHtml(view))
           const focusedAgent = view.agents.find((agent) => agent.id === focusRef.current)
           if (!focusedAgent && focusRef.current) focusRef.current = null
@@ -5609,6 +5660,13 @@ window.__ModuleLoader__.load({
         const onRootClick = (event) => {
           const target = event.target
           if (!target || !target.closest) return
+          const railGroup = target.closest('[data-rail-group]')
+          if (railGroup) {
+            const key = railGroup.getAttribute('data-rail-group')
+            railOpenRef.current = { ...railOpenRef.current, [key]: !railOpenRef.current[key] }
+            paint()
+            return
+          }
           const modeButton = target.closest('[data-mode]')
           if (modeButton) {
             const picked = modeButton.getAttribute('data-mode')
