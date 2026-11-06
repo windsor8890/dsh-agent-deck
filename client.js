@@ -287,26 +287,26 @@ window.__ModuleLoader__.load({
     }
 
     /** Record a phase change for the swimlane timeline (adjacent duplicates collapse). */
-    function markPhase(f, kind, at) {
+    function markPhase(f, kind, at, attemptId) {
       const time = at || Date.now()
       const last = f.phases[f.phases.length - 1]
-      if (last && last.kind === kind) {
+      if (last && last.kind === kind && last.attemptId === attemptId) {
         last.until = time
         return
       }
-      f.phases.push({ t: time, kind, until: time })
+      f.phases.push({ t: time, kind, until: time, attemptId })
       if (f.phases.length > MAX_PHASES) f.phases.splice(0, f.phases.length - MAX_PHASES)
     }
 
-    function logTool(f, name, at) {
-      f.toolLog.push({ t: at || Date.now(), name: String(name || 'tool').slice(0, 26), state: 'run' })
+    function logTool(f, id, name, at) {
+      f.toolLog.push({ id, t: at || Date.now(), name: String(name || 'tool'), state: 'run' })
       if (f.toolLog.length > MAX_TOOLLOG) f.toolLog.splice(0, f.toolLog.length - MAX_TOOLLOG)
     }
 
-    function settleLastTool(f, name, state, elapsed) {
+    function settleLastTool(f, id, state, elapsed) {
       for (let i = f.toolLog.length - 1; i >= 0; i--) {
         const entry = f.toolLog[i]
-        if (entry.name === name && entry.state === 'run') {
+        if (entry.id === id && entry.state === 'run') {
           entry.state = state || 'ok'
           if (typeof elapsed === 'number' && elapsed >= 0) entry.ms = elapsed
           return
@@ -347,6 +347,10 @@ window.__ModuleLoader__.load({
         pendingThink: '',
         pendingText: '',
         tools: [],
+        // Identity survives the display cap; released at the next turn boundary.
+        toolById: new Map(),
+        runningTools: 0,
+        attempts: new Map(),
         tokens: { in: 0, out: 0, cache: 0, cacheWrite: 0, reasoning: 0 },
         liveIn: 0,
         liveOut: 0,
@@ -369,10 +373,10 @@ window.__ModuleLoader__.load({
       for (const key of Object.keys(fresh)) f[key] = fresh[key]
     }
 
-    function bumpChars(f, text, at) {
+    function bumpChars(f, text, at, attemptId) {
       if (!text) return
       const now = at || Date.now()
-      f.chars.push({ t: now, n: text.length })
+      f.chars.push({ t: now, n: text.length, attemptId })
       while (f.chars.length > 0 && now - f.chars[0].t > 3000) f.chars.shift()
       f.lastAt = now
       f.activity += 1
@@ -395,39 +399,42 @@ window.__ModuleLoader__.load({
     }
 
     function pushTool(f, row) {
-      if (f.tools.some((t) => t.id === row.id && row.id)) return
+      if (row.id && f.toolById.has(row.id)) return f.toolById.get(row.id)
+      if (row.id) f.toolById.set(row.id, row)
       f.tools.push(row)
       f.calls += 1
+      if (row.state === 'run') f.runningTools += 1
       if (f.tools.length > MAX_TOOLS) {
         const running = f.tools.filter((t) => t.state === 'run').slice(-MAX_TOOLS)
         const keepDone = Math.max(0, MAX_TOOLS - running.length)
         const done = keepDone > 0 ? f.tools.filter((t) => t.state !== 'run').slice(-keepDone) : []
         f.tools = done.concat(running).sort((a, b) => (a.at || 0) - (b.at || 0))
       }
+      return row
     }
 
-    function applyChunk(f, chunk, at) {
+    function applyChunk(f, chunk, at, attemptId) {
       if (!chunk || typeof chunk !== 'object') return
       switch (chunk.type) {
         case 'reasoning-delta':
           f.pendingThink += chunk.text || ''
           if (f.pendingThink.length > THINK_CAP * 3) f.pendingThink = f.pendingThink.slice(-THINK_CAP * 3)
           f.think = tail(f.pendingThink, THINK_CAP)
-          bumpChars(f, chunk.text, at)
-          markPhase(f, 'think', at)
+          bumpChars(f, chunk.text, at, attemptId)
+          markPhase(f, 'think', at, attemptId)
           break
         case 'text-delta':
           f.pendingText += chunk.text || ''
           if (f.pendingText.length > OUT_CAP * 3) f.pendingText = f.pendingText.slice(-OUT_CAP * 3)
           f.out = tail(f.pendingText, OUT_CAP)
-          bumpChars(f, chunk.text, at)
-          markPhase(f, 'out', at)
+          bumpChars(f, chunk.text, at, attemptId)
+          markPhase(f, 'out', at, attemptId)
           break
         case 'tool-call-delta': {
-          let row = chunk.id ? f.tools.find((t) => t.id === chunk.id) : undefined
-          markPhase(f, 'act', at)
+          let row = chunk.id ? f.toolById.get(chunk.id) : undefined
+          markPhase(f, 'act', at, attemptId)
           if (!row) {
-            row = { id: chunk.id || 'live-' + f.tools.length, name: chunk.name || 'tool', arg: '', state: 'run', at: at || Date.now() }
+            row = { id: chunk.id || 'live-' + f.calls, name: chunk.name || 'tool', arg: '', state: 'run', at: at || Date.now() }
             pushTool(f, row)
           }
           if (chunk.name) row.name = chunk.name
@@ -440,7 +447,7 @@ window.__ModuleLoader__.load({
         case 'block-end': {
           const block = chunk.block
           if (block && block.type === 'tool-call') {
-            const row = f.tools.find((t) => t.id === block.id)
+            const row = f.toolById.get(block.id)
             if (row) {
               row.name = block.name || row.name
               row.arg = argPreview(row.name, block.arguments)
@@ -468,6 +475,9 @@ window.__ModuleLoader__.load({
           f.out = ''
           f.think = ''
           f.tools = []
+          f.toolById.clear()
+          f.runningTools = 0
+          f.attempts.clear()
           f.errors = 0
           f.endState = ''
           break
@@ -496,7 +506,7 @@ window.__ModuleLoader__.load({
           }
           for (const block of blocksOf(message.content)) {
             if (block && block.type === 'tool-call' && block.id) {
-              let row = f.tools.find((t) => t.id === block.id)
+              let row = f.toolById.get(block.id)
               if (!row) {
                 row = { id: block.id, name: block.name, arg: argPreview(block.name, block.arguments), state: 'run', at: event.time || Date.now() }
                 pushTool(f, row)
@@ -511,14 +521,18 @@ window.__ModuleLoader__.load({
         }
         case 'tool/call': {
           const at = event.time || Date.now()
-          pushTool(f, {
+          const row = pushTool(f, {
             id: data.callId,
             name: data.name || 'tool',
             arg: argPreview(data.name, data.arguments),
             state: 'run',
             at,
           })
-          logTool(f, data.name || 'tool', at)
+          // Execution begins at tool/call, after any streamed declaration.
+          row.at = at
+          row.name = data.name || row.name
+          row.arg = argPreview(row.name, data.arguments)
+          logTool(f, data.callId, data.name || 'tool', at)
           const touched = pathOfArguments(data.arguments)
           if (touched) bumpFile(f, touched, WRITE_TOOLS.has(data.name) ? 'w' : 'r', at)
           if (data.name === 'todo_write') {
@@ -531,13 +545,14 @@ window.__ModuleLoader__.load({
         }
         case 'tool/result': {
           const message = data.message || {}
-          const row = f.tools.find((t) => t.id === message.toolCallId)
+          const row = f.toolById.get(message.toolCallId)
           const failed = Boolean(data.error || message.isError)
           const elapsed = row && row.at ? Math.max(0, (event.time || Date.now()) - row.at) : 0
           if (row) {
+            if (row.state === 'run') f.runningTools = Math.max(0, f.runningTools - 1)
             row.state = failed ? 'err' : 'ok'
             row.ms = elapsed
-            settleLastTool(f, row.name, failed ? 'err' : 'ok', elapsed)
+            settleLastTool(f, row.id, failed ? 'err' : 'ok', elapsed)
           }
           if (failed) {
             f.errors += 1
@@ -558,6 +573,14 @@ window.__ModuleLoader__.load({
           break
         case 'turn/end': {
           const reason = data.reason || {}
+          for (const row of f.toolById.values()) {
+            if (row.state === 'run') {
+              row.state = 'stopped'
+              settleLastTool(f, row.id, 'stopped')
+            }
+          }
+          f.runningTools = 0
+          markPhase(f, 'wait', event.time || Date.now())
           if (reason.kind === 'error') {
             f.endState = 'err'
             f.errors += 1
@@ -583,9 +606,28 @@ window.__ModuleLoader__.load({
         return
       }
       if (change && change.kind === 'settle-assistant') {
-        // The settlement carries the durable assistant entry itself; its attempt's
-        // transient rows are already retired by the source.
-        if (change.entry) applyEntry(f, change.entry)
+        // Settlement may retire failed/abandoned rows without a durable message,
+        // or retire a successful stream only after its message and step/end.
+        // Reconcile against the authoritative window only at this boundary.
+        const entries = window.entries || []
+        const attempt = f.attempts.get(change.attemptId)
+        const committed = attempt && entries.some((entry) => entry.type !== 'transient' && entry.event &&
+          entry.event.type === 'assistant/message' && entry.event.data.interrupted !== true &&
+          entry.event.data.turn === attempt.turn && entry.event.data.step === attempt.step)
+        const keep = (row) => row.attemptId !== change.attemptId || committed
+        const chars = f.chars.filter(keep)
+        // A rejected interval becomes wait, so the preceding accepted phase
+        // cannot expand across time spent on a discarded attempt.
+        const phases = f.phases.map((phase) => keep(phase) ? phase : { t: phase.t, until: phase.until, kind: 'wait' })
+        resetFold(f)
+        for (const entry of entries) applyEntry(f, entry)
+        // Durable messages cannot reconstruct real streaming rates or phase
+        // timing. Preserve accepted samples, dropping rejected attempt samples.
+        f.chars = chars
+        f.phases = phases
+        if (change.entry && change.entry.event.type === 'assistant/message') {
+          markPhase(f, 'out', change.entry.event.time)
+        }
         return
       }
       resetFold(f)
@@ -597,7 +639,10 @@ window.__ModuleLoader__.load({
       if (!entry || !entry.event) return
       if (entry.type === 'transient') {
         const data = entry.event.data || {}
-        applyChunk(f, data.chunk, entry.event.time)
+        if (data.attemptId !== undefined && !f.attempts.has(data.attemptId)) {
+          f.attempts.set(data.attemptId, { turn: data.turn, step: data.step })
+        }
+        applyChunk(f, data.chunk, entry.event.time, data.attemptId)
         return
       }
       applyDurable(f, entry.event, entry)
@@ -664,7 +709,7 @@ window.__ModuleLoader__.load({
         if (fold.endState === 'err') return 'err'
         // A tool still in flight (long bash, web fetch) means work is ongoing even
         // though no stream frames arrive; do not drift into WAIT.
-        if (fold.tools.some((tool) => tool.state === 'run')) return 'run'
+        if (fold.runningTools > 0) return 'run'
         const idleFor = Date.now() - (fold.lastAt || rec.attachedAt)
         if (idleFor > 6000) return 'wait'
         return 'run'
@@ -877,10 +922,12 @@ window.__ModuleLoader__.load({
           }
           if (agent.model) modelMap.set(agent.model, (modelMap.get(agent.model) || 0) + 1)
           const phases = agent.phases || []
+          const rec = records.get(agent.id)
+          const activeUntil = rec && rec.idleSince ? Math.min(now, rec.idleSince) : now
           for (let index = 0; index < phases.length; index++) {
             const from = Math.max(windowStart, phases[index].t)
             const until = index + 1 < phases.length ? phases[index + 1].t : now
-            const to = Math.min(now, until)
+            const to = Math.min(activeUntil, until)
             if (to > from && phaseMs[phases[index].kind] !== undefined) phaseMs[phases[index].kind] += to - from
           }
         }
@@ -894,11 +941,22 @@ window.__ModuleLoader__.load({
           }
         }
         recentCalls.sort((a, b) => b.t - a.t)
-        const share = (ms) => Math.min(100, Math.max(0, Math.round((ms / TIMELINE_WINDOW) * 100)))
-        const thinkPct = share(phaseMs.think)
-        const actPct = Math.min(100 - thinkPct, share(phaseMs.act))
-        const outPct = Math.min(100 - thinkPct - actPct, share(phaseMs.out))
-        const waitPct = Math.max(0, 100 - thinkPct - actPct - outPct)
+        // Every tracked lane contributes a full trailing minute, including idle
+        // time. Concurrent agents therefore share agent-time rather than each
+        // consuming the same single wall-clock minute.
+        const observedMs = agents.length * TIMELINE_WINDOW
+        phaseMs.wait = Math.max(0, observedMs - phaseMs.think - phaseMs.act - phaseMs.out)
+        const shares = ['think', 'act', 'out', 'wait'].map((kind) => {
+          const exact = observedMs > 0 ? (phaseMs[kind] / observedMs) * 100 : kind === 'wait' ? 100 : 0
+          return { kind, pct: Math.floor(exact), remainder: exact - Math.floor(exact) }
+        })
+        // Largest remainders keep the total at 100 without clipping later kinds.
+        let remaining = 100 - shares.reduce((sum, share) => sum + share.pct, 0)
+        for (const share of shares.slice().sort((a, b) => b.remainder - a.remainder)) {
+          if (remaining-- > 0) share.pct += 1
+        }
+        const phaseMix = {}
+        for (const share of shares) phaseMix[share.kind] = share.pct
         const history = (view.history || []).concat([Math.round(totals.tps * 10) / 10]).slice(-72)
         // eased aggregate readout (odometer feel without re-rendering the DOM 60x)
         displayTpsTotal += (totals.tps - displayTpsTotal) * 0.22
@@ -920,7 +978,7 @@ window.__ModuleLoader__.load({
             .sort((a, b) => b.w * 3 + b.r - (a.w * 3 + a.r))
             .slice(0, 8),
           models: Array.from(modelMap.entries()).map(([name, count]) => ({ name, count })),
-          phaseMix: { think: thinkPct, act: actPct, out: outPct, wait: waitPct },
+          phaseMix,
           startedAt: monitorStartedAt,
         }
         for (const entry of records.values()) {
@@ -1070,7 +1128,12 @@ window.__ModuleLoader__.load({
             continue
           }
           rec.row = row
-          if (!rec.idleSince) rec.idleSince = Date.now()
+          if (!rec.idleSince) {
+            rec.idleSince = Date.now()
+            // Preserve the hold interval if this Session resumes in the same
+            // phase; otherwise adjacent phase deltas would bridge the gap.
+            markPhase(rec.fold, 'wait', rec.idleSince)
+          }
         }
         expireIdle()
         rebuild()
@@ -1143,6 +1206,9 @@ window.__ModuleLoader__.load({
         flush() {
           ensureList()
           ensureStatus()
+          // Retains must expire even while no panel is reading or subscribed.
+          // Run cleanup before the notification/rebuild fast paths below.
+          expireIdle()
           const hasAgents = records.size > 0
           // A revision nobody saw (unit came or went) must still publish once, even
           // when it was the last unit: otherwise the panel freezes on a stale frame.
@@ -1605,13 +1671,24 @@ window.__ModuleLoader__.load({
 .nxt-group .nxt-block{margin:5px 6px}
 .nxt-dimmed{opacity:.3}
 
-.nxt-analyze{display:none; position:absolute; inset:0; padding:8px; gap:8px;
-  grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr))}
-.nxt-analyze-close{position:absolute; top:8px; right:8px; z-index:6; min-width:84px; min-height:24px; padding:6px 10px; cursor:pointer;
+.nxt-analyze{display:none; position:absolute; inset:0; padding:8px; gap:8px; overflow:auto; align-content:start;
+  grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:24px repeat(2,minmax(150px,max-content)) max-content;
+  grid-auto-rows:minmax(150px,max-content)}
+.nxt-analyze-close{grid-column:1/-1; justify-self:end; position:sticky; top:0; z-index:6; min-width:84px; min-height:24px; padding:6px 10px; cursor:pointer;
   font:600 8px/1 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.12em; text-transform:uppercase;
   color:#000000; background:#ffff55; border:1px solid #ffff55; border-radius:0}
 .nxt-analyze-close:focus-visible{outline:1px solid #ffffff; outline-offset:1px}
 .nxt-analyze-close:hover{background:#ffffff; border-color:#ffffff}
+.nxt-analyze .nxt-analyze-detail{min-height:180px; overflow:visible; justify-content:flex-start}
+.nxt-analyze-text{margin:0; flex:none; font:11px/1.6 "JetBrains Mono","Cascadia Mono",Consolas,monospace;
+  white-space:pre-wrap; overflow-wrap:anywhere; color:#aaaaaa}
+.nxt-analyze-detail[data-channel="think"] .nxt-analyze-text{color:#55ffff}
+.nxt-analyze-detail[data-channel="out"] .nxt-analyze-text{color:#55ff55}
+.nxt-analyze-detail .nxt-tool{display:grid; grid-template-columns:9px minmax(0,1fr) auto; white-space:normal; overflow:visible; flex:none;
+  padding:5px 0; border-bottom:1px solid rgba(85,255,255,0.12)}
+.nxt-analyze-detail .nxt-tool .nxt-tn{max-width:none; overflow:visible; overflow-wrap:anywhere}
+.nxt-analyze-detail .nxt-tool .nxt-ta{grid-column:2/-1; grid-row:2; overflow:visible; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.6}
+.nxt-analyze-detail .nxt-tool .nxt-tm{grid-column:3; grid-row:1}
 .nxt-prefs{display:none; position:absolute; top:36px; right:8px; z-index:9; width:242px; padding:8px;
   flex-direction:column; gap:7px; background:rgba(0,0,0,0.94); border:1px solid rgba(85,255,255,0.4);
   box-shadow:0 0 18px rgba(0,0,0,0.55); font:8px/1.3 "JetBrains Mono","Cascadia Mono",Consolas,monospace; color:#aaaaaa}
@@ -1680,6 +1757,10 @@ window.__ModuleLoader__.load({
 @media (max-width: 820px){
   .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(120px,20%); grid-template-areas:"stage" "wall"}
   .nxt-wall .nxt-card{flex-basis:220px}
+  .nxt-analyze{grid-template-columns:repeat(2,minmax(0,1fr)); grid-template-rows:24px}
+}
+@media (max-width: 540px){
+  .nxt-analyze{grid-template-columns:minmax(0,1fr)}
 }
 /* Host theme follower: the HUD artwork is authored for a black canvas, so the
    light scheme is the same artwork inverted with its hue axis rotated back —
@@ -1913,7 +1994,7 @@ window.__ModuleLoader__.load({
       const errors = live.filter((agent) => agent.state === 'err').length
       const seated = live.filter((agent) => agent.deskSlot >= 0).length
       const standby = live.filter((agent) => agent.deskSlot < 0).length
-      const lastCall = (view.recentCalls || [])[view.recentCalls.length - 1]
+      const lastCall = (view.recentCalls || [])[0]
       return (
         '<div class="nxt-card nxt-film-summary">' +
         '<div class="nxt-chead"><span class="nxt-cidx">ROOM</span><span class="nxt-cname">07 / SUMMARY</span><span class="nxt-cstate">' +
@@ -2081,7 +2162,8 @@ window.__ModuleLoader__.load({
         const until = index + 1 < phases.length ? phases[index + 1].t : now
         const to = Math.min(now, until)
         if (to <= from) continue
-        const bucket = segments[phase.kind] !== undefined ? phase.kind : 'act'
+        if (!Object.prototype.hasOwnProperty.call(segments, phase.kind)) continue
+        const bucket = phase.kind
         const left = ((from - start) / TIMELINE_WINDOW) * 100
         const width = Math.max(0.5, ((to - from) / TIMELINE_WINDOW) * 100)
         segments[bucket].push([left, width, colors[bucket]])
@@ -2135,9 +2217,19 @@ window.__ModuleLoader__.load({
     }
 
     function analyzeHtml(agent) {
+      // Keep a single scroll surface: the page's setHtml preserves its offset
+      // during telemetry refreshes, including when the detail text grows.
+      const detail = (channel, label, content) =>
+        '<section class="nxt-aw nxt-analyze-detail" data-channel="' + channel + '">' +
+        '<div class="nxt-aw-h"><span>' + label + '</span><b>DETAIL</b></div>' + content + '</section>'
       return (
         '<button type="button" class="nxt-analyze-close" data-focus-release="1" title="Release focus (Esc)">× RELEASE</button>' +
-        contextWidget(agent) + taskWidget(agent) + matrixWidget(agent) + timelineWidget(agent) + filesWidget(agent) + tpsWidget(agent)
+        contextWidget(agent) + taskWidget(agent) + matrixWidget(agent) + timelineWidget(agent) + filesWidget(agent) + tpsWidget(agent) +
+        detail('think', 'THINK', '<pre class="nxt-analyze-text">' + esc(agent.think || '— no reasoning channel —') + '</pre>') +
+        detail('act', 'ACT', agent.tools && agent.tools.length
+          ? agent.tools.map(toolHtml).join('')
+          : '<p class="nxt-analyze-text">no tool calls yet</p>') +
+        detail('out', 'OUT', '<pre class="nxt-analyze-text">' + esc(agent.out || '— no output yet —') + '</pre>')
       )
     }
 
@@ -2489,7 +2581,10 @@ window.__ModuleLoader__.load({
         if (value && !feed.some((item) => item.kind === kind && item.text === value)) feed.push({ kind, text: value })
       }
       const labelOf = (agent) => agent.tag + ' ' + (agent.name || agent.id)
-      if ((view.alerts || []).length > 0) push('err', 'ALERT ' + view.alerts[0])
+      if ((view.alerts || []).length > 0) {
+        const alert = view.alerts[0]
+        push(alert.level === 'warn' ? 'wait' : 'err', 'ALERT ' + alert.text)
+      }
       for (const agent of errors.slice(0, 2)) push('err', 'ERR ' + labelOf(agent))
       for (const agent of waits.slice(0, 2)) push('wait', 'WAIT ' + labelOf(agent) + (agent.pending ? ' · needs input' : ''))
       for (const agent of held.slice(0, 1)) push('done', 'DONE ' + labelOf(agent))
@@ -4045,6 +4140,8 @@ window.__ModuleLoader__.load({
           }
         }
 
+        context.restore()
+
         // back wall: no side walls; extend the wall and floor horizontally so
         // the stage width is fully covered instead of leaving paper-white wings.
         const wallSpan = areaW / Math.max(1, s) + 10
@@ -4074,6 +4171,7 @@ window.__ModuleLoader__.load({
           context.lineTo(b.x, b.y)
           context.stroke()
         }
+        context.restore()
         quad([iso(wallMinX, minY, 1.9), iso(wallMaxX, minY, 1.9), iso(wallMaxX, minY, 2.04), iso(wallMinX, minY, 2.04)], wallTrim, 'rgba(255,255,85,0.2)')
         const baseA = iso(wallMinX, minY, 0.04)
         const baseB = iso(wallMaxX, minY, 0.04)
