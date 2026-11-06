@@ -1239,18 +1239,26 @@ window.__ModuleLoader__.load({
 .nxt-back:hover{background:rgba(255,85,255,0.16); color:#ffffff}
 
 .nxt-body{display:grid; gap:9px; padding:9px 11px; min-height:0;
-  grid-template-columns:minmax(268px, 25%) minmax(0,1fr) minmax(218px, 19%);}
+  grid-template-columns:minmax(0,1fr) minmax(210px,22%);
+  grid-template-rows:minmax(0,2fr) minmax(150px,1fr);
+  grid-template-areas:"stage rail" "wall wall";}
 .nxt-panel{position:relative; min-height:0; min-width:0; display:flex; flex-direction:column;
   border:1px solid var(--nxt-line);
   background:linear-gradient(180deg, rgba(10,10,10,0.82), rgba(0,0,0,0.88));
   box-shadow:inset 0 0 34px rgba(85,255,255,0.045);}
+.nxt-stagepanel{grid-area:stage}
+.nxt-railpanel{grid-area:rail}
+.nxt-wallpanel{grid-area:wall}
 .nxt-phead{display:flex; align-items:center; justify-content:space-between; gap:8px; padding:6px 9px 5px;
   border-bottom:1px solid rgba(255,255,85,0.08); font-size:9px; letter-spacing:.22em; color:var(--nxt-cy); text-transform:uppercase}
 .nxt-phead>span:first-child{flex:none}
 .nxt-phint{color:var(--nxt-dim); letter-spacing:.16em; font-size:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; min-width:0; text-align:right}
 
 .nxt-wall{overflow:auto; padding:8px; display:flex; flex-direction:column; gap:8px; min-height:0; flex:1 1 auto; scrollbar-width:thin}
-.nxt-wall::-webkit-scrollbar{width:6px}
+.nxt-wallpanel .nxt-wall{flex-direction:row; overflow-x:auto; overflow-y:hidden; align-items:stretch}
+.nxt-wall .nxt-card{flex:0 0 clamp(220px, 22vw, 300px); min-height:0}
+.nxt-wallpanel .nxt-wall .nxt-card{height:auto; min-height:0}
+.nxt-wall::-webkit-scrollbar{width:6px; height:6px}
 .nxt-wall::-webkit-scrollbar-thumb{background:rgba(85,255,255,0.25)}
 .nxt-card{position:relative; border:0; border-left:2px solid rgba(255,255,255,0.14); background:linear-gradient(180deg, rgba(10,10,10,0.94), rgba(0,0,0,0.94));
   padding:7px 8px 6px; cursor:pointer; transition:border-color .18s, transform .18s, box-shadow .18s; border-left-width:2px;
@@ -1547,7 +1555,7 @@ window.__ModuleLoader__.load({
 }
 
 .nxt-cinema .nxt-wallpanel,.nxt-cinema .nxt-railpanel{display:none}
-.nxt-cinema .nxt-body{grid-template-columns:minmax(0,1fr)}
+.nxt-cinema .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); grid-template-areas:"stage"}
 
 .nxt-analyze{display:none; position:absolute; inset:0; padding:8px; gap:8px;
   grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr))}
@@ -1577,7 +1585,7 @@ window.__ModuleLoader__.load({
 .nxt-stage.nxt-analyze-on .nxt-standby-tray{display:none}
 .nxt-stage.nxt-net-on .nxt-legend{display:none}
 .nxt-focus-on .nxt-wallpanel,.nxt-focus-on .nxt-railpanel{display:none}
-.nxt-focus-on .nxt-body{grid-template-columns:minmax(0,1fr)}
+.nxt-focus-on .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr); grid-template-areas:"stage"}
 .nxt-aw{position:relative; display:flex; flex-direction:column; gap:4px; min-height:0; min-width:0; overflow:hidden;
   border:0; background:linear-gradient(180deg, rgba(10,10,10,0.78), rgba(0,0,0,0.82)); padding:6px 7px}
 .nxt-aw-h{display:flex; align-items:center; justify-content:space-between; font-size:8px; letter-spacing:.2em; color:#55ffff; text-transform:uppercase; flex:none}
@@ -1617,12 +1625,12 @@ window.__ModuleLoader__.load({
 .nxt-todo[data-done="0"] i{color:#55ffff}
 
 @media (max-width: 1180px){
-  .nxt-body{grid-template-columns:minmax(240px,30%) minmax(0,1fr); }
+  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,2fr) minmax(150px,1fr); grid-template-areas:"stage" "wall"}
   .nxt-railpanel{display:none}
 }
 @media (max-width: 820px){
-  .nxt-body{grid-template-columns:minmax(0,1fr)}
-  .nxt-wallpanel{display:none}
+  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1.6fr) minmax(120px,1fr); grid-template-areas:"stage" "wall"}
+  .nxt-wall .nxt-card{flex-basis:220px}
 }
 /* Host theme follower: the HUD artwork is authored for a black canvas, so the
    light scheme is the same artwork inverted with its hue axis rotated back —
