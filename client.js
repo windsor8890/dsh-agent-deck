@@ -4010,21 +4010,20 @@ window.__ModuleLoader__.load({
           }
         }
 
-        // back wall + side wall
+        // back wall: no side walls; extend the wall and floor horizontally so
+        // the stage width is fully covered instead of leaving paper-white wings.
+        const wallSpan = areaW / Math.max(1, s) + 10
+        const wallMinX = minX - wallSpan
+        const wallMaxX = maxX + wallSpan
         quad(
-          [iso(minX, minY, 0), iso(maxX, minY, 0), iso(maxX, minY, wallH), iso(minX, minY, wallH)],
+          [iso(wallMinX, minY, 0), iso(wallMaxX, minY, 0), iso(wallMaxX, minY, wallH), iso(wallMinX, minY, wallH)],
           wallInk,
           'rgba(255,255,85,0.26)',
-        )
-        quad(
-          [iso(minX, minY, 0), iso(minX, maxY, 0), iso(minX, maxY, wallH), iso(minX, minY, wallH)],
-          'rgba(7,7,7,0.99)',
-          'rgba(255,255,85,0.2)',
         )
         context.save()
         context.strokeStyle = 'rgba(85,255,255,0.1)'
         context.lineWidth = 1
-        for (let gx = Math.ceil(minX) + 1; gx < maxX; gx += 1.5) {
+        for (let gx = Math.ceil(wallMinX) + 1; gx < wallMaxX; gx += 1.5) {
           const a = iso(gx, minY, 0)
           const b = iso(gx, minY, wallH)
           context.beginPath()
@@ -4033,16 +4032,16 @@ window.__ModuleLoader__.load({
           context.stroke()
         }
         for (let gz = 0.7; gz < wallH; gz += 0.7) {
-          const a = iso(minX, minY, gz)
-          const b = iso(maxX, minY, gz)
+          const a = iso(wallMinX, minY, gz)
+          const b = iso(wallMaxX, minY, gz)
           context.beginPath()
           context.moveTo(a.x, a.y)
           context.lineTo(b.x, b.y)
           context.stroke()
         }
-        quad([iso(minX, minY, 1.9), iso(maxX, minY, 1.9), iso(maxX, minY, 2.04), iso(minX, minY, 2.04)], wallTrim, 'rgba(255,255,85,0.2)')
-        const baseA = iso(minX, minY, 0.04)
-        const baseB = iso(maxX, minY, 0.04)
+        quad([iso(wallMinX, minY, 1.9), iso(wallMaxX, minY, 1.9), iso(wallMaxX, minY, 2.04), iso(wallMinX, minY, 2.04)], wallTrim, 'rgba(255,255,85,0.2)')
+        const baseA = iso(wallMinX, minY, 0.04)
+        const baseB = iso(wallMaxX, minY, 0.04)
         const baseGrad = context.createLinearGradient(baseA.x, baseA.y, baseB.x, baseB.y)
         baseGrad.addColorStop(0, 'rgba(255,255,85,0.05)')
         baseGrad.addColorStop(0.45, 'rgba(255,255,85,0.34)')
@@ -4202,10 +4201,10 @@ window.__ModuleLoader__.load({
         wallPanel(maxX - 4.6, 'THROUGHPUT', history, 'line', '#55ffff')
         wallPanel(maxX - 2.9, 'TOOL LOAD', toolStats.slice(0, 8).map((stat) => stat.calls), 'bars', '#55ff55')
 
-        // floor + grid
-        quad([iso(minX, minY, 0), iso(maxX, minY, 0), iso(maxX, maxY, 0), iso(minX, maxY, 0)], floorInk, 'rgba(255,255,85,0.2)')
+        // floor + grid: same extended bounds as the back wall
+        quad([iso(wallMinX, minY, 0), iso(wallMaxX, minY, 0), iso(wallMaxX, maxY, 0), iso(wallMinX, maxY, 0)], floorInk, 'rgba(255,255,85,0.2)')
         context.save()
-        for (let gx = Math.ceil(minX); gx <= maxX; gx++) {
+        for (let gx = Math.ceil(wallMinX); gx <= wallMaxX; gx++) {
           context.strokeStyle = gx % 2 === 0 ? 'rgba(85,255,255,0.10)' : 'rgba(85,255,255,0.05)'
           const a = iso(gx, minY, 0)
           const b = iso(gx, maxY, 0)
@@ -4216,8 +4215,8 @@ window.__ModuleLoader__.load({
         }
         for (let gy = Math.ceil(minY); gy <= maxY; gy++) {
           context.strokeStyle = gy % 2 === 0 ? 'rgba(85,255,255,0.09)' : 'rgba(85,255,255,0.045)'
-          const a = iso(minX, gy, 0)
-          const b = iso(maxX, gy, 0)
+          const a = iso(wallMinX, gy, 0)
+          const b = iso(wallMaxX, gy, 0)
           context.beginPath()
           context.moveTo(a.x, a.y)
           context.lineTo(b.x, b.y)

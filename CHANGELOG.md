@@ -20,6 +20,8 @@
 - Layout refresh: `AGENT UNITS` now sits across the bottom (24% height) as a horizontal
   card strip, `TELEMETRY` sits at the top-right, and the office stage fills the remaining
   top-left space with a wider desk layout.
+- Office backdrop now stretches the back wall and floor grid across the full stage width;
+  the fake isometric side wall is removed, so no paper-white strips remain at the sides.
 - Compact stage HUD: only the essential aggregate rows, a shorter sparkline and fewer
   unit/tool/call rows, leaving more room for the office floor.
 - Agent cards grow to fill the strip when there are one or two units; a single unit uses
