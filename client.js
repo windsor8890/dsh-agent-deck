@@ -4185,41 +4185,7 @@ window.__ModuleLoader__.load({
         context.moveTo(baseA.x, baseA.y)
         context.lineTo(baseB.x, baseB.y)
         context.stroke()
-        // window on the back wall: night skyline
-        const winA = iso(minX + 0.8, minY, 1.0)
-        const winB = iso(minX + 3.6, minY, 2.0)
-        quad([winA, { x: winB.x, y: winA.y }, winB, { x: winA.x, y: winB.y }], 'rgba(0,0,70,0.5)', 'rgba(85,85,255,0.55)')
-        const winW = winB.x - winA.x
-        const winH = winA.y - winB.y
-        context.save()
-        context.beginPath()
-        for (let tower = 0; tower < 9; tower++) {
-          const tw = winW / 9
-          const th = winH * (0.22 + 0.55 * Math.abs(Math.sin(tower * 1.7)))
-          context.fillStyle = 'rgba(85,85,255,0.15)'
-          context.fillRect(winA.x + tower * tw + 1, winA.y - th, Math.max(1, tw - 2), th)
-          context.fillStyle = 'rgba(255,255,85,0.55)'
-          for (let light = 0; light < 4; light++) {
-            if ((tower + light * 2) % 3 === 0) continue
-            context.fillRect(winA.x + tower * tw + 2, winA.y - th + 3 + light * (th / 5), 1.5, 1.5)
-          }
-        }
-        context.strokeStyle = 'rgba(85,85,255,0.5)'
-        context.lineWidth = 1
-        for (let mullion = 1; mullion <= 2; mullion++) {
-          const mx = winA.x + (winW * mullion) / 3
-          context.beginPath()
-          context.moveTo(mx, winA.y)
-          context.lineTo(mx, winB.y)
-          context.stroke()
-        }
-        context.fillStyle = 'rgba(85,255,255,0.5)'
-        context.font = Math.max(6, Math.round(s * 0.1)) + 'px "JetBrains Mono", ui-monospace, monospace'
-        context.textAlign = 'center'
-        context.fillText('SECTOR 07 · NIGHT SHIFT', winA.x + winW / 2, winA.y + 11)
-        context.restore()
-
-        // signage / clock
+        // signage
         const signAnchor = iso(minX + 0.5, minY, wallH - 0.3)
         context.save()
         context.textAlign = 'left'
@@ -4227,68 +4193,134 @@ window.__ModuleLoader__.load({
         context.fillStyle = 'rgba(85,255,255,0.95)'
         context.font = '600 ' + Math.max(10, Math.round(s * 0.2)) + 'px "JetBrains Mono", ui-monospace, monospace'
         context.fillText('AGENT DECK // FLOOR 07', signAnchor.x, signAnchor.y)
-        context.fillStyle = 'rgba(125,125,125,0.95)'
-        context.font = Math.max(7, Math.round(s * 0.12)) + 'px "JetBrains Mono", ui-monospace, monospace'
-        context.fillText(
-          'UNITS ' + String(totals.desks || 0).padStart(2, '0') + ' / ' + TOTAL_DESKS +
-            (totals.overflow > 0 ? ' +' + totals.overflow + ' STBY' : '') +
-            '   ·   ' + (totals.tpsDisplay !== undefined ? totals.tpsDisplay : totals.tps || 0).toFixed(1) + ' EST T/S' +
-            '   ·   TOOLS ' + (totals.tools || 0) +
-            '   ·   ERR ' + (totals.errors || 0),
-          signAnchor.x,
-          signAnchor.y + Math.round(s * 0.2),
-        )
-        // Wall control cluster: one mounted ops board with two larger monitors,
-        // plus a bigger clock to its right. The board and clock never overlap.
-        const wallPw = Math.max(88, s * 2.2)
-        const wallPh = Math.max(36, s * 0.95)
+        context.restore()
+
+        // Three separately mounted wall displays share one baseline:
+        // SECTOR 07 (live status), THROUGHPUT, TOOL LOAD. No shared backboard.
+        const wallPw = Math.max(84, s * 2.1)
+        const wallPh = Math.max(42, s * 1.0)
         const wallGap = Math.max(8, s * 0.28)
-        const boardPad = Math.max(10, s * 0.3)
-        const wallBoardX = Math.max(220, areaW * 0.5)
-        const wallBoardY = Math.max(48, wallTopScreen - 58)
-        const wallBoardW = wallPw * 2 + wallGap + boardPad * 2
-        const wallBoardH = wallPh + 28
+        const wallY = Math.max(48, wallTopScreen - 58)
+        const wallRowW = wallPw * 3 + wallGap * 2
+        const wallRowX = Math.max(210, (areaW - wallRowW) / 2 - 20)
+        const sectorX = wallRowX
+        const throughputX = sectorX + wallPw + wallGap
+        const toolLoadX = throughputX + wallPw + wallGap
         const clockR = Math.max(18, s * 0.42)
         const clockAnchor = {
-          x: Math.min(areaW - clockR - 14, Math.max(areaW - 56, wallBoardX + wallBoardW + clockR + 42)),
-          y: wallBoardY + wallBoardH * 0.48,
+          x: Math.min(areaW - clockR - 14, toolLoadX + wallPw + clockR + 48),
+          y: wallY + wallPh * 0.5,
         }
-        // shared mounting rail and cable run
-        context.save()
-        context.strokeStyle = 'rgba(85,255,255,0.26)'
-        context.lineWidth = 1
-        context.beginPath()
-        context.moveTo(wallBoardX + wallBoardW + 8, clockAnchor.y)
-        context.lineTo(clockAnchor.x - clockR - 6, clockAnchor.y)
-        context.stroke()
-        context.strokeStyle = 'rgba(255,255,85,0.22)'
-        context.strokeRect(wallBoardX - 3.5, wallBoardY - 3.5, wallBoardW + 7, wallBoardH + 7)
-        context.fillStyle = 'rgba(0,0,0,0.42)'
-        context.fillRect(wallBoardX, wallBoardY, wallBoardW, wallBoardH)
-        context.strokeStyle = 'rgba(85,255,255,0.35)'
-        context.strokeRect(wallBoardX + 0.5, wallBoardY + 0.5, wallBoardW - 1, wallBoardH - 1)
-        context.fillStyle = 'rgba(85,255,255,0.85)'
-        context.font = '600 ' + Math.max(7, Math.round(s * 0.12)) + 'px "JetBrains Mono", ui-monospace, monospace'
-        context.textAlign = 'left'
-        context.fillText('OPS FEED // SECTOR 07', wallBoardX + 8, wallBoardY + 15)
-        context.fillStyle = 'rgba(255,255,85,0.9)'
-        context.font = Math.max(6, Math.round(s * 0.1)) + 'px "JetBrains Mono", ui-monospace, monospace'
-        context.textAlign = 'right'
-        context.fillText('LIVE', wallBoardX + wallBoardW - 8, wallBoardY + 15)
-        context.textAlign = 'left'
-        const leds = [
-          ['#55ffff', totals.count > 0],
-          ['#ffff55', (totals.overflow || 0) > 0],
-          ['#ff5555', (totals.errors || 0) > 0],
-        ]
-        for (let index = 0; index < leds.length; index++) {
+
+        const drawScreenFrame = (sx, sy) => {
+          context.fillStyle = 'rgba(0,0,0,0.78)'
+          context.fillRect(sx - 4, sy - 4, wallPw + 8, wallPh + 8)
+          context.strokeStyle = 'rgba(255,255,85,0.34)'
+          context.lineWidth = 1
+          context.strokeRect(sx - 3.5, sy - 3.5, wallPw + 7, wallPh + 7)
+          context.fillStyle = panelInk
+          context.fillRect(sx, sy, wallPw, wallPh)
+          context.strokeStyle = 'rgba(85,255,255,0.48)'
+          context.strokeRect(sx + 0.5, sy + 0.5, wallPw - 1, wallPh - 1)
+          context.fillStyle = 'rgba(85,255,255,0.12)'
+          context.fillRect(sx + 1, sy + 1, wallPw - 2, 11)
+          // small wall bracket under the display
+          context.strokeStyle = 'rgba(125,125,125,0.45)'
           context.beginPath()
-          context.arc(wallBoardX + 10 + index * 10, wallBoardY + wallBoardH - 9, 2.4, 0, Math.PI * 2)
-          context.fillStyle = leds[index][1] ? leds[index][0] : 'rgba(85,85,85,0.5)'
-          context.fill()
+          context.moveTo(sx + 10, sy + wallPh + 4)
+          context.lineTo(sx + 10, sy + wallPh + 9)
+          context.lineTo(sx + 20, sy + wallPh + 9)
+          context.moveTo(sx + wallPw - 10, sy + wallPh + 4)
+          context.lineTo(sx + wallPw - 10, sy + wallPh + 9)
+          context.lineTo(sx + wallPw - 20, sy + wallPh + 9)
+          context.stroke()
         }
-        context.restore()
-        // larger wall clock, mounted separately to the right of the board
+
+        const wallPanel = (sx, label, values, kind, color) => {
+          drawScreenFrame(sx, wallY)
+          const series = values && values.length > 1 ? values : [0, 0]
+          const peak = Math.max(1, ...series)
+          const innerX = sx + 6
+          const innerY = wallY + 17
+          const innerW = wallPw - 12
+          const innerH = wallPh - 22
+          context.save()
+          context.fillStyle = 'rgba(85,255,255,0.9)'
+          context.font = '600 ' + Math.max(7, Math.round(s * 0.12)) + 'px "JetBrains Mono", ui-monospace, monospace'
+          context.textAlign = 'left'
+          context.fillText(label, sx + 5, wallY + 9)
+          if (kind === 'line') {
+            const grad = context.createLinearGradient(0, innerY, 0, innerY + innerH)
+            grad.addColorStop(0, hexA(color, 0.24))
+            grad.addColorStop(1, hexA(color, 0.01))
+            context.beginPath()
+            context.moveTo(innerX, innerY + innerH)
+            for (let index = 0; index < series.length; index++) {
+              const px = innerX + (index / (series.length - 1)) * innerW
+              const py = innerY + innerH - (series[index] / peak) * innerH
+              context.lineTo(px, py)
+            }
+            context.lineTo(innerX + innerW, innerY + innerH)
+            context.closePath()
+            context.fillStyle = grad
+            context.fill()
+            context.beginPath()
+            for (let index = 0; index < series.length; index++) {
+              const px = innerX + (index / (series.length - 1)) * innerW
+              const py = innerY + innerH - (series[index] / peak) * innerH
+              if (index === 0) context.moveTo(px, py)
+              else context.lineTo(px, py)
+            }
+            context.strokeStyle = hexA(color, 0.9)
+            context.lineWidth = 1.2
+            context.stroke()
+          } else {
+            const barW = innerW / Math.max(1, series.length)
+            for (let index = 0; index < series.length; index++) {
+              const barH = Math.max(1, Math.round((series[index] / peak) * innerH))
+              context.fillStyle = hexA(color, 0.5 + 0.45 * (series[index] / peak))
+              context.fillRect(innerX + index * barW + 1, innerY + innerH - barH, Math.max(1, barW - 2), barH)
+            }
+          }
+          context.restore()
+        }
+
+        // SECTOR 07 is a live status display, not a fake window.
+        const drawSectorScreen = () => {
+          const sx = sectorX
+          drawScreenFrame(sx, wallY)
+          context.save()
+          context.textAlign = 'left'
+          context.fillStyle = 'rgba(85,255,255,0.9)'
+          context.font = '600 ' + Math.max(7, Math.round(s * 0.12)) + 'px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('SECTOR 07', sx + 5, wallY + 9)
+          context.textAlign = 'right'
+          context.fillStyle = 'rgba(255,255,85,0.85)'
+          context.font = Math.max(6, Math.round(s * 0.1)) + 'px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('NIGHT SHIFT', sx + wallPw - 5, wallY + 9)
+          context.textAlign = 'left'
+          context.fillStyle = '#55ffff'
+          context.font = '600 ' + Math.max(14, Math.round(s * 0.34)) + 'px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText(String(totals.count || 0), sx + 6, wallY + wallPh - 15)
+          context.fillStyle = 'rgba(125,125,125,0.95)'
+          context.font = Math.max(6, Math.round(s * 0.1)) + 'px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('ACTIVE', sx + 6, wallY + wallPh - 6)
+          context.textAlign = 'right'
+          context.fillStyle = '#ffffff'
+          context.font = '600 ' + Math.max(9, Math.round(s * 0.17)) + 'px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText((totals.tpsDisplay !== undefined ? totals.tpsDisplay : totals.tps || 0).toFixed(1), sx + wallPw - 6, wallY + wallPh - 17)
+          context.fillStyle = 'rgba(125,125,125,0.95)'
+          context.font = Math.max(6, Math.round(s * 0.1)) + 'px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('TPS', sx + wallPw - 6, wallY + wallPh - 8)
+          context.restore()
+        }
+
+        drawSectorScreen()
+        wallPanel(throughputX, 'THROUGHPUT', history, 'line', '#55ffff')
+        wallPanel(toolLoadX, 'TOOL LOAD', toolStats.slice(0, 8).map((stat) => stat.calls), 'bars', '#55ff55')
+
+        // clock, separately mounted to the right of the three screens
+        context.save()
         context.beginPath()
         context.arc(clockAnchor.x, clockAnchor.y, clockR + 4, 0, Math.PI * 2)
         context.fillStyle = 'rgba(0,0,0,0.55)'
@@ -4334,128 +4366,6 @@ window.__ModuleLoader__.load({
         context.fill()
         context.restore()
 
-        // Two larger monitors sit inside the mounted ops board.
-        const wallPanel = (sx, sy, label, values, kind, color) => {
-          const pw = wallPw
-          const ph = wallPh
-          context.save()
-          context.fillStyle = 'rgba(0,0,0,0.75)'
-          context.fillRect(sx - 4, sy - 4, pw + 8, ph + 8)
-          context.strokeStyle = 'rgba(255,255,85,0.32)'
-          context.lineWidth = 1
-          context.strokeRect(sx - 3.5, sy - 3.5, pw + 7, ph + 7)
-          context.fillStyle = panelInk
-          context.fillRect(sx, sy, pw, ph)
-          context.strokeStyle = 'rgba(85,255,255,0.5)'
-          context.lineWidth = 1
-          context.strokeRect(sx + 0.5, sy + 0.5, pw - 1, ph - 1)
-          context.fillStyle = 'rgba(85,255,255,0.14)'
-          context.fillRect(sx + 1, sy + 1, pw - 2, 11)
-          context.fillStyle = 'rgba(85,255,255,0.9)'
-          context.font = '600 ' + Math.max(7, Math.round(s * 0.12)) + 'px "JetBrains Mono", ui-monospace, monospace'
-          context.textAlign = 'left'
-          context.fillText(label, sx + 5, sy + 9)
-          const series = values && values.length > 1 ? values : [0, 0]
-          const peak = Math.max(1, ...series)
-          const innerX = sx + 6
-          const innerY = sy + 17
-          const innerW = pw - 12
-          const innerH = ph - 22
-          if (kind === 'line') {
-            const grad = context.createLinearGradient(0, innerY, 0, innerY + innerH)
-            grad.addColorStop(0, hexA(color, 0.24))
-            grad.addColorStop(1, hexA(color, 0.01))
-            context.beginPath()
-            context.moveTo(innerX, innerY + innerH)
-            for (let index = 0; index < series.length; index++) {
-              const px = innerX + (index / (series.length - 1)) * innerW
-              const py = innerY + innerH - (series[index] / peak) * innerH
-              context.lineTo(px, py)
-            }
-            context.lineTo(innerX + innerW, innerY + innerH)
-            context.closePath()
-            context.fillStyle = grad
-            context.fill()
-            context.beginPath()
-            for (let index = 0; index < series.length; index++) {
-              const px = innerX + (index / (series.length - 1)) * innerW
-              const py = innerY + innerH - (series[index] / peak) * innerH
-              if (index === 0) context.moveTo(px, py)
-              else context.lineTo(px, py)
-            }
-            context.strokeStyle = hexA(color, 0.9)
-            context.lineWidth = 1.2
-            context.stroke()
-          } else {
-            const barW = innerW / Math.max(1, series.length)
-            for (let index = 0; index < series.length; index++) {
-              const barH = Math.max(1, Math.round((series[index] / peak) * innerH))
-              context.fillStyle = hexA(color, 0.5 + 0.45 * (series[index] / peak))
-              context.fillRect(innerX + index * barW + 1, innerY + innerH - barH, Math.max(1, barW - 2), barH)
-            }
-          }
-          context.restore()
-        }
-        const wallPanelY = wallBoardY + 24
-        const wallPanelX1 = wallBoardX + boardPad
-        const wallPanelX2 = wallPanelX1 + wallPw + wallGap
-        wallPanel(wallPanelX1, wallPanelY, 'THROUGHPUT', history, 'line', '#55ffff')
-        wallPanel(wallPanelX2, wallPanelY, 'TOOL LOAD', toolStats.slice(0, 8).map((stat) => stat.calls), 'bars', '#55ff55')
-
-        // floor + grid: same extended bounds as the back wall
-        quad([iso(wallMinX, minY, 0), iso(wallMaxX, minY, 0), iso(wallMaxX, maxY, 0), iso(wallMinX, maxY, 0)], floorInk, 'rgba(255,255,85,0.2)')
-        context.save()
-        for (let gx = Math.ceil(wallMinX); gx <= wallMaxX; gx++) {
-          context.strokeStyle = gx % 2 === 0 ? 'rgba(85,255,255,0.10)' : 'rgba(85,255,255,0.05)'
-          const a = iso(gx, minY, 0)
-          const b = iso(gx, maxY, 0)
-          context.beginPath()
-          context.moveTo(a.x, a.y)
-          context.lineTo(b.x, b.y)
-          context.stroke()
-        }
-        for (let gy = Math.ceil(minY); gy <= maxY; gy++) {
-          context.strokeStyle = gy % 2 === 0 ? 'rgba(85,255,255,0.09)' : 'rgba(85,255,255,0.045)'
-          const a = iso(wallMinX, gy, 0)
-          const b = iso(wallMaxX, gy, 0)
-          context.beginPath()
-          context.moveTo(a.x, a.y)
-          context.lineTo(b.x, b.y)
-          context.stroke()
-        }
-        context.restore()
-
-        // foreground floor: continue the room to the bottom edge
-        const floorEdgeY = iso(minX, maxY, 0).y
-        if (floorEdgeY < areaH) {
-          const fgGrad = context.createLinearGradient(0, floorEdgeY, 0, areaH)
-          fgGrad.addColorStop(0, 'rgba(5,5,5,1)')
-          fgGrad.addColorStop(1, 'rgba(2,2,2,1)')
-          context.fillStyle = fgGrad
-          context.fillRect(0, floorEdgeY, areaW, areaH - floorEdgeY)
-          context.save()
-          context.strokeStyle = 'rgba(85,255,255,0.07)'
-          context.lineWidth = 1
-          for (let line = 1; line <= 6; line++) {
-            const ly = floorEdgeY + ((areaH - floorEdgeY) * line) / 6
-            context.beginPath()
-            context.moveTo(0, ly)
-            context.lineTo(areaW, ly)
-            context.stroke()
-          }
-          context.strokeStyle = 'rgba(255,255,85,0.16)'
-          context.lineWidth = 2
-          for (let seg = 0; seg < 24; seg++) {
-            if (seg % 2 === 1) continue
-            context.beginPath()
-            context.moveTo((areaW * seg) / 24, areaH - 12)
-            context.lineTo((areaW * (seg + 1)) / 24, areaH - 12)
-            context.stroke()
-          }
-          context.restore()
-        }
-
-        // occupancy: front row first
         const slots = []
         for (let col = 0; col < DESK_COLS; col++) slots.push({ row: DESK_ROWS - 1, col })
         for (let col = 0; col < DESK_COLS; col++) slots.push({ row: 0, col })
@@ -4818,22 +4728,6 @@ window.__ModuleLoader__.load({
           context.fillStyle = gold
           context.font = '600 8px "JetBrains Mono", ui-monospace, monospace'
           context.fillText('SUPERVISOR', plate.x, plate.y - 2)
-          context.restore()
-          // floating command marker, raised clear of the chief and podium
-          const mark = iso(x + w / 2, y + d / 2, z + 1.65)
-          const markLabel = chief ? 'CHIEF ' + chief.tag : 'CHIEF DESK'
-          context.save()
-          context.textAlign = 'center'
-          context.textBaseline = 'alphabetic'
-          context.font = '600 8px "JetBrains Mono", ui-monospace, monospace'
-          const markW = Math.max(96, context.measureText(markLabel).width + 16)
-          context.fillStyle = 'rgba(0,0,0,0.88)'
-          context.fillRect(mark.x - markW / 2, mark.y - 12, markW, 16)
-          context.strokeStyle = hexA(gold, 0.9)
-          context.lineWidth = 1
-          context.strokeRect(mark.x - markW / 2 + 0.5, mark.y - 11.5, markW - 1, 15)
-          context.fillStyle = gold
-          context.fillText(markLabel, mark.x, mark.y)
           context.restore()
         }
 

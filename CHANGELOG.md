@@ -4,7 +4,9 @@
 
 ### Changed
 
-- Raised the supervisor callout above the chief, enlarged the wall clock, and regrouped the two wall monitors into a mounted OPS FEED board.
+- Removed the floating CHIEF DESK marker but kept the SUPERVISOR nameplate.
+- Replaced the decorative night-shift window with a live SECTOR 07 status screen and aligned it with the THROUGHPUT / TOOL LOAD displays.
+- Removed the shared OPS FEED backboard; the three wall displays are individually mounted, and the clock is larger and clear of them.
 
 ## 0.6.2 — 2026-11-07
 
