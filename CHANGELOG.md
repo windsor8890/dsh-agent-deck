@@ -41,6 +41,8 @@
   throttling and hidden-panel pause remain.
 - Throughput curves are now canvas-rendered at 30fps, interpolating between the monitor's
   10Hz samples; the old SVG charts visibly stepped at the repaint cadence.
+- Agent-unit card sparklines use the same 30fps Canvas/interpolation path, so the small
+  per-unit curves no longer jump on the slow card repaint.
 - Wall clock is screen-anchored to the visible top-right wall; the throughput/tool-load
   monitors now sit below it instead of covering it.
 - Removed the unexplained decorative hexagonal wall emblem.

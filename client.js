@@ -1313,6 +1313,7 @@ window.__ModuleLoader__.load({
 .nxt-cspark-delta[data-dir="up"]{color:#55ff55}
 .nxt-cspark-delta[data-dir="down"]{color:#ff5555}
 .nxt-cspark-graph{flex:1; height:18px; min-width:40px; overflow:hidden}
+.nxt-card-spark-canvas{width:100%; height:18px; display:block}
 .nxt-spark-svg{display:block; width:100%; height:100%}
 .nxt-bar{display:inline-block; width:46px; height:4px; background:rgba(85,255,255,0.14); position:relative; overflow:hidden; vertical-align:middle}
 .nxt-bar>i{display:block; height:100%; background:linear-gradient(90deg,var(--nxt-cy),var(--nxt-mg)); box-shadow:0 0 6px rgba(85,255,255,0.6)}
@@ -1917,7 +1918,7 @@ window.__ModuleLoader__.load({
         '</span><span class="nxt-cspark-unit">est t/s</span>' +
         (agent.tpsDelta !== 0 ? '<span class="nxt-cspark-delta" data-dir="' + (agent.tpsDelta > 0 ? 'up' : 'down') + '">' + (agent.tpsDelta > 0 ? '▲' : '▼') + Math.abs(agent.tpsDelta) + '%</span>' : '') +
         '<span class="nxt-cspark-graph">' +
-        sparkMarkup(agent.tpsHistory, agent.color, 18) +
+        '<canvas class="nxt-card-spark-canvas" data-spark-id="' + esc(agent.id) + '" data-spark-color="' + esc(agent.color) + '" aria-hidden="true"></canvas>' +
         '</span></div>' +
         '<div class="nxt-cfilm">' +
         '<div class="nxt-cfrow"><span class="nxt-cflbl">ACT</span><span class="nxt-cfval">' +
@@ -5671,7 +5672,13 @@ window.__ModuleLoader__.load({
           }
           return out
         }
-        const drawCanvasSpark = (canvas, values) => {
+        const hexToRgba = (color, alpha) => {
+          const match = /^#?([0-9a-f]{6})$/i.exec(String(color || ''))
+          if (!match) return 'rgba(85,255,255,' + alpha + ')'
+          const value = parseInt(match[1], 16)
+          return 'rgba(' + ((value >> 16) & 255) + ',' + ((value >> 8) & 255) + ',' + (value & 255) + ',' + alpha + ')'
+        }
+        const drawCanvasSpark = (canvas, values, color = '#55ffff') => {
           if (!canvas) return
           const cssW = canvas.clientWidth
           const cssH = canvas.clientHeight
@@ -5695,8 +5702,8 @@ window.__ModuleLoader__.load({
             y: padY + usableH - (value / peak) * usableH,
           }))
           const grad = ctx.createLinearGradient(0, padY, 0, cssH)
-          grad.addColorStop(0, 'rgba(85,255,255,0.30)')
-          grad.addColorStop(1, 'rgba(85,255,255,0.015)')
+          grad.addColorStop(0, hexToRgba(color, 0.30))
+          grad.addColorStop(1, hexToRgba(color, 0.015))
           ctx.beginPath()
           ctx.moveTo(pts[0].x, cssH)
           for (const point of pts) ctx.lineTo(point.x, point.y)
@@ -5709,13 +5716,13 @@ window.__ModuleLoader__.load({
             if (index === 0) ctx.moveTo(pts[index].x, pts[index].y)
             else ctx.lineTo(pts[index].x, pts[index].y)
           }
-          ctx.strokeStyle = 'rgba(85,255,255,0.9)'
+          ctx.strokeStyle = hexToRgba(color, 0.9)
           ctx.lineWidth = 1.4
           ctx.stroke()
           const last = pts[pts.length - 1]
           ctx.beginPath()
           ctx.arc(last.x, last.y, 1.8, 0, Math.PI * 2)
-          ctx.fillStyle = '#55ffff'
+          ctx.fillStyle = color
           ctx.fill()
         }
         let chartRaf = 0
@@ -5724,6 +5731,25 @@ window.__ModuleLoader__.load({
         let chartFrom = []
         let chartTo = []
         let chartT0 = 0
+        const cardChartStates = new Map()
+        const readCardCharts = (view, now) => {
+          const seen = new Set()
+          for (const agent of view.agents || []) {
+            const id = agent.id
+            const next = (agent.tpsHistory || []).slice(-36)
+            if (!id || next.length < 2) continue
+            const previous = cardChartStates.get(id)
+            const from = previous ? mixSeries(previous.from, previous.to, Math.min(1, (now - previous.t0) / 100)) : next
+            cardChartStates.set(id, {
+              from,
+              to: next,
+              t0: now,
+              color: agent.color || '#55ffff',
+            })
+            seen.add(id)
+          }
+          for (const id of cardChartStates.keys()) if (!seen.has(id)) cardChartStates.delete(id)
+        }
         const stepCharts = () => {
           chartRaf = window.requestAnimationFrame(stepCharts)
           if (!visibleRef.current) return
@@ -5740,14 +5766,22 @@ window.__ModuleLoader__.load({
                 chartTo = next
                 chartT0 = now
               }
+              readCardCharts(chartView, now)
             }
             lastChartRead = now
           }
-          if (chartTo.length < 2) return
-          const t = chartT0 ? Math.min(1, (now - chartT0) / 100) : 1
-          const values = mixSeries(chartFrom, chartTo, t)
-          drawCanvasSpark($('nxt-hud-spark'), values)
-          drawCanvasSpark($('nxt-rail-spark'), values)
+          if (chartTo.length >= 2) {
+            const t = chartT0 ? Math.min(1, (now - chartT0) / 100) : 1
+            const values = mixSeries(chartFrom, chartTo, t)
+            drawCanvasSpark($('nxt-hud-spark'), values)
+            drawCanvasSpark($('nxt-rail-spark'), values)
+          }
+          for (const cardCanvas of root.querySelectorAll('[data-spark-id]')) {
+            const state = cardChartStates.get(cardCanvas.getAttribute('data-spark-id'))
+            if (!state) continue
+            const t = state.t0 ? Math.min(1, (now - state.t0) / 100) : 1
+            drawCanvasSpark(cardCanvas, mixSeries(state.from, state.to, t), state.color)
+          }
         }
         stepCharts()
         const stopStage = startStage(canvas, () => stageStateRef.current, (id) => {
