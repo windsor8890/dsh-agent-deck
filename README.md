@@ -33,15 +33,15 @@ Agent Deck 是 DSH Web GUI 的只读多智能体监控面板：把每个正在�
 ## 使用方法
 
 1. 打开 DSH Web GUI，在左侧选择「监控室」。
-2. 舞台默认是 `OFFICE`；底部 `RADAR / NET` 切换视图。
-3. 单击左侧 TUI 卡或办公室工位聚焦该 agent；`× RELEASE` 或 `Esc` 返回。
+2. 舞台默认是 `OFFICE`；舞台顶部可切换 `RADAR / NET`。
+3. 单击底部 `AGENT UNITS` 卡片或办公室工位聚焦该 agent；`× RELEASE` 或 `Esc` 返回。
 4. 点卡片右上 `↗` 打开对应会话。
 5. `C` 或 `CINEMA` 进入铺满舞台的布局；`Esc` 退出。
 6. `PREFS` 可调访客开关、串访节奏、最多访客数、桌面动作开关和 `CINEMA SKIN`（`COZY` / `COLD`），偏好仅保存在当前浏览器。
 7. 舞台顶部战况条显示 `ACTIVE / WAITING / ERRORS / SYNC / TPS / DESKS`；点 `FILTER` 图例可按状态高亮。
 8. 悬停工位或卡片会高亮同会话/同族 agent；9+ 活跃时会显示横向 agent 状态条。
 
-面板跟随 DSH 的浅色/深色主题；没有活跃会话时，办公室和左栏会保留一位值班鲸鱼娘，避免空场。
+面板跟随 DSH 的浅色/深色主题；没有活跃会话时，办公室和底部 filmstrip 会保留一位值班鲸鱼娘，避免空场。
 
 ## 安装
 

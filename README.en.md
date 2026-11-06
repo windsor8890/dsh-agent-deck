@@ -33,15 +33,15 @@ Agent Deck is a read-only multi-agent telemetry console for the DSH Web GUI. It 
 ## Usage
 
 1. Open the DSH Web GUI and choose **Control Room** in the left sidebar.
-2. `OFFICE` is the default stage; use `RADAR / NET` to switch views.
-3. Click a TUI card or an office desk to focus an agent; press `Esc` or click `× RELEASE` to return.
+2. `OFFICE` is the default stage; switch with `RADAR / NET` at the top of the stage.
+3. Click an `AGENT UNITS` card at the bottom or an office desk to focus an agent; press `Esc` or click `× RELEASE` to return.
 4. Click `↗` on a card to open that session.
 5. Press `C` or click `CINEMA` for the full-width stage; `Esc` exits.
 6. `PREFS` controls visits, visit pace, max visitors, desk actions and `CINEMA SKIN` (`COZY` / `COLD`); preferences are stored in the current browser.
 7. The battle bar above the stage shows `ACTIVE / WAITING / ERRORS / SYNC / TPS / DESKS`; click a `FILTER` legend chip to highlight a state.
 8. Hover a desk or card to highlight its session/lineage; 9+ live units show a horizontal agent strip.
 
-The panel follows DSH's light/dark theme. When no session is active, a resident whale-girl stays in the left panel and at desk `#00` so the room does not look empty.
+The panel follows DSH's light/dark theme. When no session is active, a resident whale-girl stays in the bottom filmstrip and at desk `#00` so the room does not look empty.
 
 ## Installation
 
