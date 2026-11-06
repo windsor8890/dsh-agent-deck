@@ -4157,25 +4157,25 @@ window.__ModuleLoader__.load({
         context.fill()
         context.restore()
 
-        // wall data panels
-        const wallPanel = (worldX, label, values, kind, color) => {
-          const anchor = iso(worldX, minY, wallH - 0.5)
+        // wall data panels: screen-anchored to the visible wall, below the
+        // top HUD/legend so they never collide with the mode controls.
+        const wallPanel = (sx, sy, label, values, kind, color) => {
           const pw = Math.max(52, s * 1.45)
           const ph = Math.max(28, s * 0.78)
           context.save()
           context.fillStyle = panelInk
-          context.fillRect(anchor.x, anchor.y - ph, pw, ph)
+          context.fillRect(sx, sy, pw, ph)
           context.strokeStyle = 'rgba(85,255,255,0.36)'
           context.lineWidth = 1
-          context.strokeRect(anchor.x + 0.5, anchor.y - ph + 0.5, pw - 1, ph - 1)
+          context.strokeRect(sx + 0.5, sy + 0.5, pw - 1, ph - 1)
           context.fillStyle = 'rgba(85,255,255,0.8)'
           context.font = Math.max(6, Math.round(s * 0.1)) + 'px "JetBrains Mono", ui-monospace, monospace'
           context.textAlign = 'left'
-          context.fillText(label, anchor.x + 4, anchor.y - ph + 9)
+          context.fillText(label, sx + 4, sy + 9)
           const series = values && values.length > 1 ? values : [0, 0]
           const peak = Math.max(1, ...series)
-          const innerX = anchor.x + 4
-          const innerY = anchor.y - ph + 12
+          const innerX = sx + 4
+          const innerY = sy + 12
           const innerW = pw - 8
           const innerH = ph - 16
           if (kind === 'line') {
@@ -4198,8 +4198,10 @@ window.__ModuleLoader__.load({
           }
           context.restore()
         }
-        wallPanel(maxX - 4.6, 'THROUGHPUT', history, 'line', '#55ffff')
-        wallPanel(maxX - 2.9, 'TOOL LOAD', toolStats.slice(0, 8).map((stat) => stat.calls), 'bars', '#55ff55')
+        const wallPw = Math.max(52, s * 1.45)
+        const panelY = Math.max(70, wallTopScreen + 58)
+        wallPanel(areaW - 2 * wallPw - 26, panelY, 'THROUGHPUT', history, 'line', '#55ffff')
+        wallPanel(areaW - wallPw - 12, panelY, 'TOOL LOAD', toolStats.slice(0, 8).map((stat) => stat.calls), 'bars', '#55ff55')
 
         // floor + grid: same extended bounds as the back wall
         quad([iso(wallMinX, minY, 0), iso(wallMaxX, minY, 0), iso(wallMaxX, maxY, 0), iso(wallMinX, maxY, 0)], floorInk, 'rgba(255,255,85,0.2)')
@@ -4516,6 +4518,86 @@ window.__ModuleLoader__.load({
           context.restore()
         }
 
+        // A distinct command desk in the middle aisle: the supervisor/chief sits
+        // between the two agent rows instead of occupying one of the 8 unit seats.
+        const drawSupervisorStation = () => {
+          const x = 4.25
+          const y = 1.55
+          const w = 2.2
+          const d = 1.15
+          const z = 0.66
+          const gold = '#ffff55'
+          const pad = iso(x + w / 2, y + d / 2, 0)
+          context.save()
+          context.strokeStyle = 'rgba(255,255,85,0.55)'
+          context.lineWidth = 1.4
+          context.shadowColor = gold
+          context.shadowBlur = 14
+          context.beginPath()
+          context.ellipse(pad.x, pad.y, s * 1.5, s * 0.42, 0, 0, Math.PI * 2)
+          context.stroke()
+          context.shadowBlur = 0
+          context.restore()
+          // chair behind the command desk
+          solid(x + w * 0.28, y - 0.52, w * 0.44, 0.3, 0, 0.48, themed('rgba(22,22,18,1)', 'rgba(52,50,42,1)'), themed('rgba(16,16,12,1)', 'rgba(62,60,50,1)'), themed('rgba(12,12,9,1)', 'rgba(72,70,58,1)'), hexA(gold, 0.24))
+          solid(x + w * 0.28, y - 0.58, w * 0.44, 0.08, 0.48, 0.98, themed('rgba(25,25,20,1)', 'rgba(58,56,46,1)'), themed('rgba(16,16,12,1)', 'rgba(70,68,56,1)'), themed('rgba(12,12,9,1)', 'rgba(82,78,64,1)'), hexA(gold, 0.35))
+          // desk
+          solid(x, y, w, d, 0, z, themed('rgba(30,30,24,1)', 'rgba(72,70,56,1)'), themed('rgba(18,18,14,1)', 'rgba(58,56,46,1)'), themed('rgba(12,12,9,1)', 'rgba(78,75,60,1)'), hexA(gold, 0.55))
+          for (const [lx, ly] of [
+            [x + 0.08, y + 0.08],
+            [x + w - 0.08, y + 0.08],
+            [x + 0.08, y + d - 0.08],
+            [x + w - 0.08, y + d - 0.08],
+          ]) {
+            solid(lx - 0.035, ly - 0.035, 0.07, 0.07, 0, z, themed('rgba(24,24,18,1)', 'rgba(62,60,50,1)'), themed('rgba(15,15,11,1)', 'rgba(70,68,56,1)'), themed('rgba(12,12,9,1)', 'rgba(82,78,64,1)'), hexA(gold, 0.2))
+          }
+          // dual command monitors
+          for (const offset of [0.62, 1.58]) {
+            const base = iso(x + offset, y + d * 0.3, z + 0.08)
+            const screenW = Math.max(30, s * 0.58)
+            const screenH = Math.max(20, s * 0.36)
+            context.fillStyle = 'rgba(4,6,3,1)'
+            context.fillRect(base.x - screenW / 2 - 2, base.y - screenH - 4, screenW + 4, screenH + 4)
+            context.strokeStyle = hexA(gold, 0.8)
+            context.lineWidth = 1
+            context.strokeRect(base.x - screenW / 2 - 1.5, base.y - screenH - 3.5, screenW + 3, screenH + 3)
+            context.fillStyle = 'rgba(255,255,85,0.12)'
+            context.fillRect(base.x - screenW / 2, base.y - screenH - 2, screenW, screenH)
+            context.strokeStyle = 'rgba(255,255,85,0.65)'
+            context.beginPath()
+            context.moveTo(base.x - screenW / 2 + 3, base.y - screenH * 0.72)
+            context.lineTo(base.x - screenW / 2 + screenW * 0.45, base.y - screenH * 0.72)
+            context.lineTo(base.x - screenW / 2 + screenW * 0.62, base.y - screenH * 0.32)
+            context.lineTo(base.x - screenW / 2 + screenW * 0.9, base.y - screenH * 0.32)
+            context.stroke()
+            context.fillStyle = themed('rgba(40,40,30,1)', 'rgba(90,88,70,1)')
+            context.fillRect(base.x - 1.5, base.y - 4, 3, 4)
+            context.fillRect(base.x - 7, base.y, 14, 2)
+          }
+          // nameplate
+          const plate = iso(x + w / 2, y + d + 0.34, 0)
+          context.save()
+          context.textAlign = 'center'
+          context.textBaseline = 'alphabetic'
+          context.fillStyle = 'rgba(0,0,0,0.92)'
+          context.fillRect(plate.x - 45, plate.y - 13, 90, 16)
+          context.strokeStyle = hexA(gold, 0.8)
+          context.lineWidth = 1
+          context.strokeRect(plate.x - 44.5, plate.y - 12.5, 89, 15)
+          context.fillStyle = gold
+          context.font = '600 8px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('SUPERVISOR', plate.x, plate.y - 2)
+          context.restore()
+          // floating command marker
+          const mark = iso(x + w / 2, y + d / 2, z + 0.95)
+          context.save()
+          context.textAlign = 'center'
+          context.fillStyle = 'rgba(255,255,85,0.92)'
+          context.font = '600 8px "JetBrains Mono", ui-monospace, monospace'
+          context.fillText('CHIEF DESK', mark.x, mark.y)
+          context.restore()
+        }
+
         const drawDeskBatch = (batch) => {
           for (const desk of batch) {
           const { x, y, agent } = desk
@@ -4806,6 +4888,7 @@ window.__ModuleLoader__.load({
           }
         }
         drawDeskBatch(desks.filter((desk) => desk.slot < DESK_COLS))
+        drawSupervisorStation()
         for (const visit of officeVisits) if (visit.worldY < pitchY) drawVisitor(visit)
         drawDeskBatch(desks.filter((desk) => desk.slot >= DESK_COLS))
         for (const visit of officeVisits) if (visit.worldY >= pitchY) drawVisitor(visit)

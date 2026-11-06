@@ -22,6 +22,10 @@
   top-left space with a wider desk layout.
 - Office backdrop now stretches the back wall and floor grid across the full stage width;
   the fake isometric side wall is removed, so no paper-white strips remain at the sides.
+- The two wall monitors are anchored to the visible top-right wall (below the HUD/legend)
+  instead of floating over the stage controls.
+- Added a decorative `CHIEF DESK / SUPERVISOR` command station in the center aisle; it is
+  not counted in the 8 agent seats and does not consume a session slot.
 - Compact stage HUD: only the essential aggregate rows, a shorter sparkline and fewer
   unit/tool/call rows, leaving more room for the office floor.
 - Agent cards grow to fill the strip when there are one or two units; a single unit uses
