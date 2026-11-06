@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Discard failed assistant attempts without mixing their streamed text or tool calls into a retry.
+- Match tool results by call ID, including long MCP names and concurrent calls with the same name.
+- Keep tool identities and in-flight results independent of the 18-row display limit.
+- Release idle retained sessions after three minutes even when no monitor page is open.
+- Normalize the phase mix across all tracked agents, including idle time.
+- Balance Canvas state saves in the office renderer for sustained viewing.
+- Restore escaped, readable THINK / ACT / OUT details in ANALYZE alongside the six charts.
+- Show alert text in the feed and select the newest call for the room summary.
+
+### Tests
+
+- Add dependency-free behavioral regressions for telemetry, monitor lifecycle, and UI rendering to `npm test`.
+
 ## 0.6.1 — 2026-11-07
 
 ### Changed
