@@ -1,4 +1,4 @@
-# Visual baselines
+﻿# Visual baselines
 
 These are **manual** visual baselines for the plugin panel. They are not yet
 automated in CI: the repository has no Playwright/browser dependency and the
@@ -10,8 +10,8 @@ and mention it in the changelog.
 
 | Baseline | Scenario | What to inspect |
 |---|---|---|
-| ![office light](baselines/office-light.png) | Office, light theme, 9 active units | desk geometry, sprites, seat labels, light palette |
-| ![seat overflow](baselines/seat-overflow-light.png) | Office, light theme, 9 active units | 8 seats filled, STANDBY tray, LIVE FEED +N |
+| ![office light](baselines/office-light.png) | Office, light theme, two active units | desk geometry, sprites, seat labels, light palette |
+| ![seat overflow](baselines/seat-overflow-light.png) | Office, light theme, two active units | 8 seats filled, STANDBY tray, LIVE FEED +N |
 | ![office dark](baselines/office-dark.png) | Office, dark theme, two active units | CGA palette, glow, contrast, no sprite fringe |
 | ![analyze light](baselines/analyze-light.png) | ANALYZE focus mode, light theme | six widgets, release button, hidden sidebars |
 | ![prefs light](baselines/prefs-light.png) | PREFS open, light theme | segmented controls, readable contrast |
