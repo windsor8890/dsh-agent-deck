@@ -17,6 +17,10 @@
 - Four-frame whale-girl action loop GIF (idle / working / slacking / gaming) in the README.
 - Two transparent working keyframes embedded as WebP: the `busy` pose now shows a subtle
   typing loop in Canvas while the rest of the states keep the static generated sprites.
+- Transparent two-frame loops for `slacking` (phone) and `gaming` (controller); reduced
+  motion freezes them on the first frame.
+- Light-theme office contrast raised with darker pre-filter furniture/wall tones, keeping
+  the paper-white theme without losing desk outlines.
 - Layout refresh: `AGENT UNITS` sits across the bottom (20% height) as a horizontal
   filmstrip, `TELEMETRY` sits at the top-right, and the office stage fills the remaining
   top-left space with a wider desk layout.

@@ -46,7 +46,7 @@ const client = read('client.js')
 const readme = read('README.md')
 const readmeEn = read('README.en.md')
 const pkg = JSON.parse(read('package.json'))
-const ASSET_NAMES = ['front', 'happy', 'stand', 'side', 'rest', 'slack', 'game', 'work1', 'work2']
+const ASSET_NAMES = ['front', 'happy', 'stand', 'side', 'rest', 'slack', 'game', 'work1', 'work2', 'slack1', 'slack2', 'game1', 'game2']
 
 // ---------------------------------------------------------------- syntax
 check('client.js passes node --check', () => {
