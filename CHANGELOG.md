@@ -39,6 +39,8 @@
   idle, caps its backing DPR at 1.25, and pauses entirely when the panel is not visible.
 - Raised office motion to 30fps while agents are active and 20fps when idle; the DOM
   throttling and hidden-panel pause remain.
+- Throughput curves are now canvas-rendered at 30fps, interpolating between the monitor's
+  10Hz samples; the old SVG charts visibly stepped at the repaint cadence.
 - Wall clock is screen-anchored to the visible top-right wall; the throughput/tool-load
   monitors now sit below it instead of covering it.
 - Removed the unexplained decorative hexagonal wall emblem.

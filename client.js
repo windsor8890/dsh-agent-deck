@@ -1384,6 +1384,8 @@ window.__ModuleLoader__.load({
 .nxt-shud-h{display:flex; justify-content:space-between; gap:10px; font-size:8px; letter-spacing:.2em; color:#55ffff; margin-bottom:4px}
 .nxt-shud-spark{margin-top:6px; height:34px; overflow:hidden}
 .nxt-shud-spark svg{width:100%; height:34px; display:block}
+.nxt-chart-canvas{width:100%; height:100%; display:block}
+.nxt-rail-chart{height:30px; margin-top:3px}
 .nxt-shud-grid{display:grid; grid-template-columns:1fr 1fr; gap:1px 14px}
 .nxt-shud-kv{display:flex; justify-content:space-between; gap:8px; white-space:nowrap}
 .nxt-shud-kv span{color:#00aaaa}
@@ -2227,7 +2229,7 @@ window.__ModuleLoader__.load({
       const peak = Math.max(1, ...series)
       const tl =
         '<div class="nxt-shud-h"><span>AGGREGATE · THROUGHPUT (EST)</span><span>' + stamp + '</span></div>' +
-        '<div class="nxt-shud-spark">' + sparkMarkup(series, '#55ffff', 26) + '</div>' +
+        '<div class="nxt-shud-spark"><canvas id="nxt-hud-spark" class="nxt-chart-canvas" aria-hidden="true"></canvas></div>' +
         '<div class="nxt-shud-line"><span class="t">NOW</span><span class="nm">' +
         (totals.tpsDisplay || totals.tps || 0).toFixed(1) + ' EST T/S</span>' +
         '<span class="ms">PEAK ' + peak.toFixed(1) + '</span></div>'
@@ -2343,7 +2345,7 @@ window.__ModuleLoader__.load({
       )
 
       const thruput =
-        railBlock('THRUPUT', nowTps.toFixed(1) + ' est t/s', ratioSpark(history)) +
+        railBlock('THRUPUT', nowTps.toFixed(1) + ' est t/s', '<div class="nxt-rail-chart"><canvas id="nxt-rail-spark" class="nxt-chart-canvas" aria-hidden="true"></canvas></div>') +
         railBlock(
           'LIVE',
           '60s',
@@ -5656,6 +5658,98 @@ window.__ModuleLoader__.load({
         }
 
         paint()
+        // Canvas-rendered throughput charts. The monitor samples at 10Hz; the
+        // chart layer interpolates between samples at 30fps so the line glides
+        // instead of visibly stepping once per sample.
+        const mixSeries = (from, to, t) => {
+          const count = Math.max(from.length, to.length)
+          const out = new Array(count)
+          for (let index = 0; index < count; index++) {
+            const a = from[index] === undefined ? 0 : from[index]
+            const b = to[index] === undefined ? 0 : to[index]
+            out[index] = a + (b - a) * t
+          }
+          return out
+        }
+        const drawCanvasSpark = (canvas, values) => {
+          if (!canvas) return
+          const cssW = canvas.clientWidth
+          const cssH = canvas.clientHeight
+          if (cssW < 2 || cssH < 2 || values.length < 2) return
+          const chartDpr = Math.min(2, window.devicePixelRatio || 1)
+          const backingW = Math.round(cssW * chartDpr)
+          const backingH = Math.round(cssH * chartDpr)
+          if (canvas.width !== backingW) canvas.width = backingW
+          if (canvas.height !== backingH) canvas.height = backingH
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+          ctx.setTransform(chartDpr, 0, 0, chartDpr, 0, 0)
+          ctx.clearRect(0, 0, cssW, cssH)
+          const peak = Math.max(1, ...values)
+          const padX = 1
+          const padY = 3
+          const usableW = cssW - padX * 2
+          const usableH = cssH - padY * 2
+          const pts = values.map((value, index) => ({
+            x: padX + (index / (values.length - 1)) * usableW,
+            y: padY + usableH - (value / peak) * usableH,
+          }))
+          const grad = ctx.createLinearGradient(0, padY, 0, cssH)
+          grad.addColorStop(0, 'rgba(85,255,255,0.30)')
+          grad.addColorStop(1, 'rgba(85,255,255,0.015)')
+          ctx.beginPath()
+          ctx.moveTo(pts[0].x, cssH)
+          for (const point of pts) ctx.lineTo(point.x, point.y)
+          ctx.lineTo(pts[pts.length - 1].x, cssH)
+          ctx.closePath()
+          ctx.fillStyle = grad
+          ctx.fill()
+          ctx.beginPath()
+          for (let index = 0; index < pts.length; index++) {
+            if (index === 0) ctx.moveTo(pts[index].x, pts[index].y)
+            else ctx.lineTo(pts[index].x, pts[index].y)
+          }
+          ctx.strokeStyle = 'rgba(85,255,255,0.9)'
+          ctx.lineWidth = 1.4
+          ctx.stroke()
+          const last = pts[pts.length - 1]
+          ctx.beginPath()
+          ctx.arc(last.x, last.y, 1.8, 0, Math.PI * 2)
+          ctx.fillStyle = '#55ffff'
+          ctx.fill()
+        }
+        let chartRaf = 0
+        let lastChartRead = 0
+        let lastChartDraw = 0
+        let chartFrom = []
+        let chartTo = []
+        let chartT0 = 0
+        const stepCharts = () => {
+          chartRaf = window.requestAnimationFrame(stepCharts)
+          if (!visibleRef.current) return
+          const now = performance.now()
+          if (now - lastChartDraw < 1000 / 30) return
+          lastChartDraw = now
+          if (now - lastChartRead >= 100) {
+            const chartView = readView()
+            if (chartView) {
+              const next = (chartView.history || []).slice(-56)
+              if (next.length > 1) {
+                const t = chartTo.length ? Math.min(1, (now - chartT0) / 100) : 1
+                chartFrom = mixSeries(chartFrom, chartTo, t)
+                chartTo = next
+                chartT0 = now
+              }
+            }
+            lastChartRead = now
+          }
+          if (chartTo.length < 2) return
+          const t = chartT0 ? Math.min(1, (now - chartT0) / 100) : 1
+          const values = mixSeries(chartFrom, chartTo, t)
+          drawCanvasSpark($('nxt-hud-spark'), values)
+          drawCanvasSpark($('nxt-rail-spark'), values)
+        }
+        stepCharts()
         const stopStage = startStage(canvas, () => stageStateRef.current, (id) => {
           focusRef.current = id
           paint(true)
@@ -5847,6 +5941,7 @@ window.__ModuleLoader__.load({
           stopStage()
           unsubscribe()
           window.clearInterval(clockTimer)
+          window.cancelAnimationFrame(chartRaf)
           if (visibilityObserver) visibilityObserver.disconnect()
           document.removeEventListener('visibilitychange', onVisibilityChange)
           root.removeEventListener('click', onRootClick)
