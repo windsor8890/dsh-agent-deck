@@ -1240,7 +1240,7 @@ window.__ModuleLoader__.load({
 
 .nxt-body{display:grid; gap:9px; padding:9px 11px; min-height:0;
   grid-template-columns:minmax(0,1fr) minmax(210px,22%);
-  grid-template-rows:minmax(0,2fr) minmax(150px,1fr);
+  grid-template-rows:minmax(0,1fr) minmax(140px,24%);
   grid-template-areas:"stage rail" "wall wall";}
 .nxt-panel{position:relative; min-height:0; min-width:0; display:flex; flex-direction:column;
   border:1px solid var(--nxt-line);
@@ -1256,8 +1256,24 @@ window.__ModuleLoader__.load({
 
 .nxt-wall{overflow:auto; padding:8px; display:flex; flex-direction:column; gap:8px; min-height:0; flex:1 1 auto; scrollbar-width:thin}
 .nxt-wallpanel .nxt-wall{flex-direction:row; overflow-x:auto; overflow-y:hidden; align-items:stretch}
-.nxt-wall .nxt-card{flex:0 0 clamp(220px, 22vw, 300px); min-height:0}
+.nxt-wall .nxt-card{flex:1 0 clamp(230px, 22vw, 320px); min-width:230px; min-height:0}
 .nxt-wallpanel .nxt-wall .nxt-card{height:auto; min-height:0}
+/* One agent: use the full bottom width as a compact multi-column card instead of
+   stretching a narrow vertical card and leaving the right side empty. */
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident){display:grid; gap:4px 14px; padding:8px 10px;
+  grid-template-columns:minmax(210px,1.1fr) minmax(180px,1fr) minmax(180px,1fr);
+  grid-template-rows:auto auto minmax(0,1fr) auto;
+  grid-template-areas:"head head head" "meta spark spark" "think act out" "foot foot foot"}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-chead{grid-area:head}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-cmeta{grid-area:meta}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-cspark{grid-area:spark; align-self:center}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec:nth-child(4){grid-area:think}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec:nth-child(5){grid-area:act}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec:nth-child(6){grid-area:out}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-cfoot{grid-area:foot}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec{margin-top:0; padding-top:0; min-width:0; border-top:1px solid rgba(85,255,255,0.08)}
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec > .nxt-stream,
+.nxt-wallpanel .nxt-wall .nxt-card:only-child:not(.nxt-resident) > .nxt-sec > .nxt-act{justify-content:flex-start}
 .nxt-wall::-webkit-scrollbar{width:6px; height:6px}
 .nxt-wall::-webkit-scrollbar-thumb{background:rgba(85,255,255,0.25)}
 .nxt-card{position:relative; border:0; border-left:2px solid rgba(255,255,255,0.14); background:linear-gradient(180deg, rgba(10,10,10,0.94), rgba(0,0,0,0.94));
@@ -1356,14 +1372,14 @@ window.__ModuleLoader__.load({
 .nxt-stby-row span{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
 /* readouts: one horizontal row pinned to the bottom of the stage */
-.nxt-stage-hud{position:absolute; left:10px; right:10px; bottom:10px; height:clamp(150px, 30%, 250px);
+.nxt-stage-hud{position:absolute; left:10px; right:10px; bottom:10px; height:clamp(96px, 18%, 140px);
   display:flex; flex-direction:row; gap:8px; pointer-events:none; z-index:4}
 .nxt-analyze-on .nxt-stage-hud{display:none}
 .nxt-net-on .nxt-stage-hud{display:none}
 .nxt-hud-off .nxt-stage-hud{display:none}
-.nxt-shud{position:relative; flex:1 1 0; min-width:0; min-height:0; overflow:hidden; padding:6px 8px;
+.nxt-shud{position:relative; flex:1 1 0; min-width:0; min-height:0; overflow:hidden; padding:5px 7px;
   background:rgba(0,0,0,0.78); border:0;
-  font-size:9px; color:#aaaaaa; font-variant-numeric:tabular-nums; line-height:1.45}
+  font-size:8.5px; color:#aaaaaa; font-variant-numeric:tabular-nums; line-height:1.4}
 .nxt-shud-h{display:flex; justify-content:space-between; gap:10px; font-size:8px; letter-spacing:.2em; color:#55ffff; margin-bottom:4px}
 .nxt-shud-spark{margin-top:6px; height:34px; overflow:hidden}
 .nxt-shud-spark svg{width:100%; height:34px; display:block}
@@ -1625,11 +1641,11 @@ window.__ModuleLoader__.load({
 .nxt-todo[data-done="0"] i{color:#55ffff}
 
 @media (max-width: 1180px){
-  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,2fr) minmax(150px,1fr); grid-template-areas:"stage" "wall"}
+  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(140px,24%); grid-template-areas:"stage" "wall"}
   .nxt-railpanel{display:none}
 }
 @media (max-width: 820px){
-  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1.6fr) minmax(120px,1fr); grid-template-areas:"stage" "wall"}
+  .nxt-body{grid-template-columns:minmax(0,1fr); grid-template-rows:minmax(0,1fr) minmax(120px,24%); grid-template-areas:"stage" "wall"}
   .nxt-wall .nxt-card{flex-basis:220px}
 }
 /* Host theme follower: the HUD artwork is authored for a black canvas, so the
@@ -2172,11 +2188,8 @@ window.__ModuleLoader__.load({
         kvRow('TURNS', totals.turns || 0) +
         kvRow('TOOLS', totals.tools || 0) +
         kvRow('ERRORS', totals.errors || 0) +
-        kvRow('TOK IN', fmtNum(totals.tin || 0)) +
-        kvRow('TOK OUT', fmtNum(totals.tout || 0)) +
-        kvRow('CACHE', fmtNum(totals.cache || 0)) +
         '</div>' +
-        '<div class="nxt-shud-spark">' + sparkMarkup(series, '#55ffff', 34) + '</div>' +
+        '<div class="nxt-shud-spark">' + sparkMarkup(series, '#55ffff', 26) + '</div>' +
         '<div class="nxt-shud-line"><span class="t">NOW</span><span class="nm">' +
         (totals.tpsDisplay || totals.tps || 0).toFixed(1) + ' EST T/S</span>' +
         '<span class="ms">PEAK ' + peak.toFixed(1) + '</span></div>'
@@ -2184,7 +2197,7 @@ window.__ModuleLoader__.load({
       const standby = view.agents.filter((agent) => agent.deskSlot < 0)
       const units =
         seats
-          .slice(0, DESK_COUNT)
+          .slice(0, 4)
           .map((agent) => {
             const width = agent.ctx >= 0 ? agent.ctx : Math.min(100, Math.round(agent.ctxTokens / 2000))
             return (
@@ -2202,7 +2215,7 @@ window.__ModuleLoader__.load({
         : ''
       const tr = '<div class="nxt-shud-h"><span>UNITS</span><span>' + (totals.desks || 0) + ' / ' + DESK_COUNT + ' DESKS' +
         (standby.length > 0 ? ' · +' + standby.length + ' STANDBY' : '') + '</span></div>' + units + standbyLine
-      const toolStats = (view.toolStats || []).slice(0, 5)
+      const toolStats = (view.toolStats || []).slice(0, 3)
       const maxTool = toolStats.length > 0 ? Math.max(1, toolStats[0].calls) : 1
       const tools =
         toolStats
@@ -2218,7 +2231,7 @@ window.__ModuleLoader__.load({
         '<div class="nxt-shud-h"><span>TOOL MIX · 60s</span><span>' + (totals.tools || 0) + '</span></div>' + tools +
         '<div class="nxt-shud-legend"><span><i style="background:#55ffff"></i>RUN</span><span><i style="background:#ffff55"></i>WAIT</span>' +
         '<span><i style="background:#ff5555"></i>ERR</span><span><i style="background:#555555"></i>SYNC</span></div>'
-      const calls = (view.recentCalls || []).slice(0, 5)
+      const calls = (view.recentCalls || []).slice(0, 3)
       const br =
         '<div class="nxt-shud-h"><span>RECENT CALLS</span><span>LIVE</span></div>' +
         (calls
@@ -3592,7 +3605,7 @@ window.__ModuleLoader__.load({
 
         const focused = state.focused
         const agents = state.agents
-        const hudRow = state.hud ? Math.min(250, Math.max(150, height * 0.3)) + 10 : 0
+        const hudRow = state.hud ? Math.min(140, Math.max(96, height * 0.18)) + 10 : 0
         const heroW = width
         const heroH = Math.max(140, height - hudRow)
         const cx = heroW / 2
@@ -3836,7 +3849,7 @@ window.__ModuleLoader__.load({
         const TOTAL_DESKS = DESK_COLS * DESK_ROWS
 
         // shallow isometric (2.5D): rows run horizontally, depth recedes up-right
-        const pitchX = 2.2
+        const pitchX = 3.0
         const pitchY = 3.4
         const deskW = 1.7
         const deskD = 1.15

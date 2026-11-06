@@ -17,9 +17,13 @@
 - Four-frame whale-girl action loop GIF (idle / working / slacking / gaming) in the README.
 - Two transparent working keyframes embedded as WebP: the `busy` pose now shows a subtle
   typing loop in Canvas while the rest of the states keep the static generated sprites.
-- Layout refresh: `AGENT UNITS` now sits across the bottom third as a horizontal card
-  strip, `TELEMETRY` sits at the top-right of the stage area, and the office stage fills
-  the remaining top-left space.
+- Layout refresh: `AGENT UNITS` now sits across the bottom (24% height) as a horizontal
+  card strip, `TELEMETRY` sits at the top-right, and the office stage fills the remaining
+  top-left space with a wider desk layout.
+- Compact stage HUD: only the essential aggregate rows, a shorter sparkline and fewer
+  unit/tool/call rows, leaving more room for the office floor.
+- Agent cards grow to fill the strip when there are one or two units; a single unit uses
+  a multi-column wide card so the bottom area does not stay half empty.
 
 ## 0.5.0 — 2026-11-06
 
