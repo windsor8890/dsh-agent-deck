@@ -4,7 +4,7 @@
 
 ### Changed
 
-- Renamed the sidebar/panel entry from `监控室 / Control Room` to the product name `Agent Deck`.
+- Renamed the sidebar/panel entry: Chinese `作战室`, English `Agent Deck` (previously `监控室 / Control Room`).
 
 ## 0.6.0 — 2026-11-07
 

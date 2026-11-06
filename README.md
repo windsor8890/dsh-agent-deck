@@ -32,7 +32,7 @@ Agent Deck 是 DSH Web GUI 的只读多智能体监控面板：把每个正在�
 
 ## 使用方法
 
-1. 打开 DSH Web GUI，在左侧选择「Agent Deck」。
+1. 打开 DSH Web GUI，在左侧选择「作战室」。
 2. 舞台默认是 `OFFICE`；舞台顶部可切换 `RADAR / NET`。
 3. 单击底部 `AGENT UNITS` 卡片或办公室工位聚焦该 agent；`× RELEASE` 或 `Esc` 返回。
 4. 点卡片右上 `↗` 打开对应会话。
