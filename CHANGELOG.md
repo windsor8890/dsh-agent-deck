@@ -15,6 +15,8 @@
   old procedural character is never drawn as a placeholder. Until the WebP data URLs
   settle, the unit is skipped; a failed pose reuses the front sprite only after probing.
 - Four-frame whale-girl action loop GIF (idle / working / slacking / gaming) in the README.
+- Two transparent working keyframes embedded as WebP: the `busy` pose now shows a subtle
+  typing loop in Canvas while the rest of the states keep the static generated sprites.
 
 ## 0.5.0 — 2026-11-06
 

@@ -46,7 +46,7 @@ const client = read('client.js')
 const readme = read('README.md')
 const readmeEn = read('README.en.md')
 const pkg = JSON.parse(read('package.json'))
-const ASSET_NAMES = ['front', 'happy', 'stand', 'side', 'rest', 'slack', 'game']
+const ASSET_NAMES = ['front', 'happy', 'stand', 'side', 'rest', 'slack', 'game', 'work1', 'work2']
 
 // ---------------------------------------------------------------- syntax
 check('client.js passes node --check', () => {
@@ -57,7 +57,7 @@ check('client.js passes node --check', () => {
 
 // ---------------------------------------------------------------- sprites
 const spriteSources = {}
-check('seven embedded sprite data URIs are present', () => {
+check('embedded sprite data URIs are present', () => {
   for (const name of ASSET_NAMES) {
     const pattern = new RegExp("const GIRL_" + name.toUpperCase() + "_SRC = 'data:image/(webp|png);base64,([^']+)'")
     const match = client.match(pattern)
@@ -75,10 +75,10 @@ check('embedded sprite bytes match assets/*.webp', () => {
   }
   return 'hashes match'
 })
-check('GIRL_SPRITE_SRC maps all seven pose keys', () => {
+check('GIRL_SPRITE_SRC maps all pose keys', () => {
   const block = client.slice(client.indexOf('const GIRL_SPRITE_SRC = {'), client.indexOf('}', client.indexOf('const GIRL_SPRITE_SRC = {')) + 1)
   for (const key of ASSET_NAMES) assert(block.includes(key + ': GIRL_'), 'missing pose key ' + key)
-  return '7 keys'
+  return ASSET_NAMES.length + ' keys'
 })
 
 // ---------------------------------------------------------------- module contract + helpers
@@ -227,7 +227,7 @@ for (const result of results) {
 }
 console.log('')
 console.log('client.js  ' + clientBytes + ' bytes · gzip ' + gzipBytes + ' bytes')
-console.log('assets     ' + assetBytes + ' bytes (7 WebP)')
+console.log('assets     ' + assetBytes + ' bytes (' + ASSET_NAMES.length + ' WebP)')
 console.log('checks     ' + (results.length - failures) + '/' + results.length + ' passed')
 if (failures > 0) {
   console.error('\n' + failures + ' check(s) failed')
