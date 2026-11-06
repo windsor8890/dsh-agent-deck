@@ -1386,6 +1386,10 @@ window.__ModuleLoader__.load({
 .nxt-shud-spark{margin-top:6px; height:34px; overflow:hidden}
 .nxt-shud-spark svg{width:100%; height:34px; display:block}
 .nxt-chart-canvas{width:100%; height:100%; display:block}
+.nxt-inline-bar-canvas{display:block; width:100%; height:100%}
+.nxt-inline-bar{display:inline-block; width:46px; height:4px; background:rgba(85,255,255,0.14); vertical-align:middle; overflow:hidden}
+.nxt-unit-viz-canvas{display:block; width:100%; height:100%}
+.nxt-phase>canvas{display:block; width:100%; height:100%}
 .nxt-rail-chart{height:30px; margin-top:3px}
 .nxt-shud-grid{display:grid; grid-template-columns:1fr 1fr; gap:1px 14px}
 .nxt-shud-kv{display:flex; justify-content:space-between; gap:8px; white-space:nowrap}
@@ -1637,7 +1641,7 @@ window.__ModuleLoader__.load({
 .nxt-aw-h{display:flex; align-items:center; justify-content:space-between; font-size:8px; letter-spacing:.2em; color:#55ffff; text-transform:uppercase; flex:none}
 .nxt-aw-h b{color:var(--nxt-cy); font-weight:600; letter-spacing:.08em}
 .nxt-aw-body{flex:1; min-height:0; display:flex; flex-direction:column; gap:3px; overflow:hidden; justify-content:center}
-.nxt-ring{width:100%; height:100%; max-height:112px; display:block}
+.nxt-ring-canvas{width:100%; height:112px; display:block}
 .nxt-ring-bg{fill:none; stroke:rgba(85,255,255,0.14); stroke-width:7}
 .nxt-ring-fg{fill:none; stroke:var(--nxt-cy); stroke-width:7; stroke-linecap:round; transform:rotate(-90deg); transform-origin:50% 50%;
   filter:drop-shadow(0 0 5px rgba(85,255,255,0.75))}
@@ -1647,13 +1651,15 @@ window.__ModuleLoader__.load({
 .nxt-kvrow{display:flex; justify-content:space-between; gap:6px; font-size:9px; color:#aaaaaa; font-variant-numeric:tabular-nums; flex:none}
 .nxt-kvrow span{color:#55ffff; letter-spacing:.12em; font-size:8px}
 .nxt-kvrow b{color:#aaaaaa; font-weight:600}
-.nxt-heat{display:grid; grid-template-columns:56px repeat(12,minmax(0,1fr)); gap:2px; align-items:center; flex:1; min-height:0; align-content:center}
-.nxt-heat-name{color:#aaaaaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:8px}
-.nxt-heat-cell{height:11px; background:var(--nxt-cy); border-radius:0; display:block}
+.nxt-heat{display:flex; flex-direction:column; gap:3px; flex:1; min-height:0; justify-content:center}
+.nxt-heat-row{display:flex; align-items:center; gap:5px; min-height:11px}
+.nxt-heat-name{width:56px; flex:none; color:#aaaaaa; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:8px}
+.nxt-matrix-canvas{flex:1; height:11px; display:block}
 .nxt-lanes{display:flex; flex-direction:column; gap:4px; justify-content:center; flex:1; min-height:0}
 .nxt-lane{display:flex; align-items:center; gap:5px; height:15px}
 .nxt-lane-name{width:34px; flex:none; font-size:7px; letter-spacing:.1em; color:#55ffff}
-.nxt-lane-track{position:relative; flex:1; height:9px; background:rgba(85,255,255,0.07); border-radius:0; overflow:hidden}
+.nxt-lane-track{position:relative; flex:1; height:9px; background:rgba(85,255,255,0.07); overflow:hidden}
+.nxt-lane-canvas{display:block; width:100%; height:100%}
 .nxt-lane-seg{position:absolute; top:0; bottom:0; border-radius:0; opacity:.85}
 .nxt-files{display:flex; flex-direction:column; gap:3px; flex:1; min-height:0; overflow:hidden; justify-content:center}
 .nxt-file{display:flex; align-items:center; gap:6px; font-size:9px; color:#aaaaaa; white-space:nowrap}
@@ -1661,7 +1667,7 @@ window.__ModuleLoader__.load({
 .nxt-file .nxt-fbar{width:48px; height:4px; background:rgba(255,85,255,0.16); flex:none; overflow:hidden}
 .nxt-file .nxt-fbar>i{display:block; height:100%; background:linear-gradient(90deg,var(--nxt-mg),var(--nxt-am)); box-shadow:0 0 6px rgba(255,85,255,0.6)}
 .nxt-file .nxt-frw{width:38px; text-align:right; font-size:8px; color:#555555; flex:none}
-.nxt-spark{width:100%; flex:1; min-height:48px; display:block}
+.nxt-analyze-tps-canvas{width:100%; flex:1; min-height:48px; display:block}
 .nxt-spark polyline{fill:none; stroke:var(--nxt-cy); stroke-width:1.6; filter:drop-shadow(0 0 4px rgba(85,255,255,0.8))}
 .nxt-spark .nxt-spark-fill{fill:rgba(85,255,255,0.16); stroke:none}
 .nxt-todo{display:flex; align-items:center; gap:5px; font-size:9px; color:#aaaaaa; white-space:nowrap; overflow:hidden; flex:none}
@@ -1843,44 +1849,20 @@ window.__ModuleLoader__.load({
 
     /** Per-unit mini visualization: 0 = sparkline, 1 = tool bars, 2 = call queue. */
     function unitViz(agent, index) {
-      const color = agent.color || '#55ffff'
       const kind = index % 3
-      if (kind === 0) return sparkMarkup(agent.tpsHistory, color, 12)
-      if (kind === 1) {
-        const bins = new Array(6).fill(0)
-        const now = Date.now()
-        for (const entry of agent.toolLog || []) {
-          const age = now - entry.t
-          if (age < 0 || age > TIMELINE_WINDOW) continue
-          const idx = clamp(5 - Math.floor(age / (TIMELINE_WINDOW / 6)), 0, 5)
-          bins[idx] += 1
-        }
-        const peak = Math.max(1, ...bins)
-        const bars = bins
-          .map((value, i) => {
-            const height = value === 0 ? 1 : Math.max(2, Math.round((value / peak) * 11))
-            return '<rect x="' + (i * 8 + 1) + '" y="' + (12 - height) + '" width="5" height="' + height +
-              '" fill="' + color + '" fill-opacity="' + (value === 0 ? 0.25 : 0.85) + '"/>'
-          })
-          .join('')
-        return '<svg class="nxt-spark-svg" viewBox="0 0 46 12" preserveAspectRatio="none">' + bars + '</svg>'
-      }
-      const durations = (agent.tools || []).slice(-5).map((tool) => tool.ms || 0)
-      const peak = Math.max(1, ...durations)
-      const rows = durations
-        .map((ms, i) => {
-          const width = ms === 0 ? 2 : Math.max(3, Math.round((ms / peak) * 44))
-          return '<rect x="0" y="' + (i * 2.4).toFixed(1) + '" width="' + width + '" height="1.7" fill="' + color + '" fill-opacity="0.75"/>'
-        })
-        .join('')
-      return '<svg class="nxt-spark-svg" viewBox="0 0 46 12" preserveAspectRatio="none">' + rows + '</svg>'
+      return (
+        '<canvas class="nxt-unit-viz-canvas" data-viz-id="' + esc(agent.id) +
+        '" data-viz-kind="' + kind + '" data-viz-color="' + esc(agent.color || '#55ffff') +
+        '" aria-hidden="true"></canvas>'
+      )
     }
 
     function cardHtml(agent, focused, hovered, filtered) {
       const currentTool = agent.tools.length > 0 ? agent.tools[agent.tools.length - 1] : null
       const ctxMeta =
         agent.ctx >= 0
-          ? 'CTX <i class="nxt-bar"><i style="width:' + agent.ctx + '%"></i></i> ' + agent.ctx + '%'
+          ? 'CTX <span class="nxt-inline-bar"><canvas class="nxt-inline-bar-canvas" data-bar="ctxpct" data-agent-id="' +
+            esc(agent.id) + '" data-value="' + agent.ctx + '" aria-hidden="true"></canvas></span> ' + agent.ctx + '%'
           : 'CTX ' + fmtNum(agent.ctxTokens) + ' tok'
       return (
         '<div class="nxt-card nxt-film" data-state="' +
@@ -2033,16 +2015,10 @@ window.__ModuleLoader__.load({
     }
 
     function ringSvg(pct, legend, hot) {
-      const circumference = 2 * Math.PI * 40
-      const dash = circumference * clamp(pct, 0, 100) / 100
       return (
-        '<svg class="nxt-ring" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">' +
-        '<circle class="nxt-ring-bg" cx="50" cy="50" r="40"/>' +
-        '<circle class="nxt-ring-fg' + (hot ? ' nxt-ring-fg-hot' : '') + '" cx="50" cy="50" r="40" stroke-dasharray="' +
-        circumference.toFixed(1) + '" stroke-dashoffset="' + (circumference - dash).toFixed(1) + '"/>' +
-        '<text class="nxt-ring-num" x="50" y="45">' + legend.value + '</text>' +
-        '<text class="nxt-ring-sub" x="50" y="59">' + legend.sub + '</text>' +
-        '</svg>'
+        '<canvas class="nxt-ring-canvas" data-ring-pct="' + clamp(pct, 0, 100) +
+        '" data-ring-value="' + esc(legend.value) + '" data-ring-sub="' + esc(legend.sub) +
+        '" data-ring-hot="' + (hot ? '1' : '0') + '" aria-hidden="true"></canvas>'
       )
     }
 
@@ -2102,11 +2078,11 @@ window.__ModuleLoader__.load({
       for (const entry of entries) for (const value of entry[1]) if (value > max) max = value
       const cells = entries
         .map(([name, row]) => {
-          const label = '<div class="nxt-heat-name" title="' + esc(name) + '">' + esc(name) + '</div>'
-          const bars = row
-            .map((value) => '<i class="nxt-heat-cell" style="opacity:' + (value === 0 ? 0.06 : 0.2 + 0.8 * (value / max)).toFixed(2) + '"></i>')
-            .join('')
-          return label + bars
+          return (
+            '<div class="nxt-heat-row"><span class="nxt-heat-name" title="' + esc(name) + '">' + esc(name) + '</span>' +
+            '<canvas class="nxt-matrix-canvas" data-matrix-values="' + row.join(',') + '" data-matrix-max="' + max +
+            '" aria-hidden="true"></canvas></div>'
+          )
         })
         .join('')
       return widgetFrame('TOOL MATRIX', '60s', '<div class="nxt-heat">' + cells + '</div>')
@@ -2117,7 +2093,7 @@ window.__ModuleLoader__.load({
       const start = now - TIMELINE_WINDOW
       const phases = agent.phases || []
       const colors = { think: '#55ffff', act: '#ff55ff', out: '#55ff55' }
-      const segments = { think: '', act: '', out: '' }
+      const segments = { think: [], act: [], out: [] }
       for (let index = 0; index < phases.length; index++) {
         const phase = phases[index]
         const from = Math.max(start, phase.t)
@@ -2127,13 +2103,14 @@ window.__ModuleLoader__.load({
         const bucket = segments[phase.kind] !== undefined ? phase.kind : 'act'
         const left = ((from - start) / TIMELINE_WINDOW) * 100
         const width = Math.max(0.5, ((to - from) / TIMELINE_WINDOW) * 100)
-        segments[bucket] +=
-          '<i class="nxt-lane-seg" style="left:' + left.toFixed(2) + '%;width:' + width.toFixed(2) + '%;background:' + colors[bucket] + '"></i>'
+        segments[bucket].push([left, width, colors[bucket]])
       }
       const lanes = [['think', 'THINK'], ['act', 'ACT'], ['out', 'OUT']]
         .map(
           ([kind, label]) =>
-            '<div class="nxt-lane"><span class="nxt-lane-name">' + label + '</span><div class="nxt-lane-track">' + segments[kind] + '</div></div>',
+            '<div class="nxt-lane"><span class="nxt-lane-name">' + label + '</span><div class="nxt-lane-track">' +
+            '<canvas class="nxt-lane-canvas" data-lane-segments="' + esc(encodeURIComponent(JSON.stringify(segments[kind]))) +
+            '" aria-hidden="true"></canvas></div></div>',
         )
         .join('')
       return widgetFrame('PHASE TIMELINE', '60s', '<div class="nxt-lanes">' + lanes + '</div>')
@@ -2151,7 +2128,7 @@ window.__ModuleLoader__.load({
           const weight = Math.max(4, Math.round(((file.w * 3 + file.r) / max) * 100))
           return (
             '<div class="nxt-file"><span class="nxt-fpath" title="' + esc(file.path) + '">' + esc(tail(file.path, 34)) + '</span>' +
-            '<i class="nxt-fbar"><i style="width:' + weight + '%"></i></i>' +
+            '<span class="nxt-fbar"><canvas class="nxt-inline-bar-canvas" data-bar="file" data-value="' + (file.w * 3 + file.r) + '" aria-hidden="true"></canvas></span>' +
             '<span class="nxt-frw">' + (file.w > 0 ? file.w + 'w' : '') + (file.r > 0 ? ' ' + file.r + 'r' : '') + '</span></div>'
           )
         })
@@ -2169,8 +2146,7 @@ window.__ModuleLoader__.load({
       const area = '0,100 ' + points + ' 100,100'
       const body =
         '<div class="nxt-aw-body">' +
-        '<svg class="nxt-spark" viewBox="0 0 100 100" preserveAspectRatio="none"><polygon class="nxt-spark-fill" points="' + area + '"/>' +
-        '<polyline points="' + points + '"/></svg>' +
+        '<canvas class="nxt-analyze-tps-canvas" data-analyze-tps-id="' + esc(agent.id) + '" aria-hidden="true"></canvas>' +
         '<div class="nxt-kvrow"><span>NOW</span><b>' + shownTps(agent).toFixed(1) + ' est t/s</b></div>' +
         '<div class="nxt-kvrow"><span>PEAK</span><b>' + peak.toFixed(1) + ' est t/s</b></div>' +
         '</div>'
@@ -2263,8 +2239,8 @@ window.__ModuleLoader__.load({
           .map(
             (stat) =>
               '<div class="nxt-mini"><span class="nxt-mn">' + esc(stat.name) + '</span>' +
-              '<span class="nxt-mbar"><i class="' + (stat.errs > 0 ? 'err' : '') + '" style="width:' +
-              Math.max(6, Math.round((stat.calls / maxTool) * 100)) + '%"></i></span>' +
+              '<span class="nxt-mbar"><canvas class="nxt-inline-bar-canvas" data-bar="tool" data-tool="' +
+              esc(stat.name) + '" data-value="' + stat.calls + '" data-err="' + (stat.errs > 0 ? '1' : '0') + '" aria-hidden="true"></canvas></span>' +
               '<span class="nxt-mv">' + stat.calls + '</span></div>',
           )
           .join('') || '<div class="nxt-mini"><span class="nxt-mn">no calls</span></div>'
@@ -2390,14 +2366,13 @@ window.__ModuleLoader__.load({
           )
         : ''
 
-      const maxTin = view.agents.reduce((max, a) => Math.max(max, a.ctxTokens), 0)
       const load = view.agents.length
         ? view.agents
             .map((a) => {
-              const width = maxTin > 0 ? Math.max(2, Math.round((a.ctxTokens / maxTin) * 100)) : 0
               return (
                 '<div class="nxt-load"><span class="nxt-lname">' + esc(a.tag + ' ' + a.name) +
-                '</span><i class="nxt-bar"><i style="width:' + width + '%"></i></i><span>' + fmtNum(a.ctxTokens) + '</span></div>'
+                '</span><span class="nxt-bar"><canvas class="nxt-inline-bar-canvas" data-bar="ctxload" data-agent-id="' +
+                esc(a.id) + '" data-value="' + a.ctxTokens + '" aria-hidden="true"></canvas></span><span>' + fmtNum(a.ctxTokens) + '</span></div>'
               )
             })
             .join('')
@@ -2405,14 +2380,13 @@ window.__ModuleLoader__.load({
       const ctx = railBlock('CONTEXT LOAD', 'CTX', load)
 
       const toolStats = (view.toolStats || []).slice(0, 6)
-      const maxTool = toolStats.length > 0 ? Math.max(1, toolStats[0].calls) : 1
       const toolMix = toolStats.length
         ? toolStats
             .map(
               (stat) =>
                 '<div class="nxt-mini"><span class="nxt-mn">' + esc(stat.name) + '</span>' +
-                '<span class="nxt-mbar"><i class="' + (stat.errs > 0 ? 'err' : '') + '" style="width:' +
-                Math.max(6, Math.round((stat.calls / maxTool) * 100)) + '%"></i></span>' +
+                '<span class="nxt-mbar"><canvas class="nxt-inline-bar-canvas" data-bar="tool" data-tool="' +
+                esc(stat.name) + '" data-value="' + stat.calls + '" data-err="' + (stat.errs > 0 ? '1' : '0') + '" aria-hidden="true"></canvas></span>' +
                 '<span class="nxt-mv">' + stat.calls + '</span></div>',
             )
             .join('')
@@ -2429,7 +2403,8 @@ window.__ModuleLoader__.load({
               const avg = stat.msSum / stat.msCount
               return (
                 '<div class="nxt-mini"><span class="nxt-mn">' + esc(stat.name) + '</span>' +
-                '<span class="nxt-mbar"><i style="width:' + Math.min(100, Math.max(3, Math.round(avg / 30))) + '%"></i></span>' +
+                '<span class="nxt-mbar"><canvas class="nxt-inline-bar-canvas" data-bar="latency" data-tool="' +
+                esc(stat.name) + '" data-value="' + avg + '" aria-hidden="true"></canvas></span>' +
                 '<span class="nxt-mv">' + esc(fmtMs(avg)) + '</span></div>'
               )
             })
@@ -2441,11 +2416,7 @@ window.__ModuleLoader__.load({
       const phase = railBlock(
         'PHASE MIX · 60s',
         '%',
-        '<div class="nxt-phase">' +
-          '<i style="width:' + mix.think + '%;background:#55ffff"></i>' +
-          '<i style="width:' + mix.act + '%;background:#ff55ff"></i>' +
-          '<i style="width:' + mix.out + '%;background:#55ff55"></i>' +
-          '<i style="width:' + mix.wait + '%;background:#555555"></i></div>' +
+        '<div class="nxt-phase"><canvas data-bar="phase" data-think="' + mix.think + '" data-act="' + mix.act + '" data-out="' + mix.out + '" data-wait="' + mix.wait + '" aria-hidden="true"></canvas></div>' +
           '<div class="nxt-phase-legend">' +
           '<span><i style="background:#55ffff"></i>THINK ' + mix.think + '</span>' +
           '<span><i style="background:#ff55ff"></i>ACT ' + mix.act + '</span>' +
@@ -2461,8 +2432,7 @@ window.__ModuleLoader__.load({
             .map(
               (file) =>
                 '<div class="nxt-file"><span class="nxt-fpath" title="' + esc(file.path) + '">' + esc(tail(file.path, 28)) +
-                '</span><i class="nxt-fbar"><i style="width:' + Math.max(4, Math.round(((file.w * 3 + file.r) / maxFile) * 100)) +
-                '%"></i></i><span class="nxt-frw">' + (file.w > 0 ? file.w + 'w' : '') + (file.r > 0 ? ' ' + file.r + 'r' : '') + '</span></div>',
+                '</span><span class="nxt-fbar"><canvas class="nxt-inline-bar-canvas" data-bar="file" data-value="' + (file.w * 3 + file.r) + '" aria-hidden="true"></canvas></span><span class="nxt-frw">' + (file.w > 0 ? file.w + 'w' : '') + (file.r > 0 ? ' ' + file.r + 'r' : '') + '</span></div>',
             )
             .join('')
         : '<div class="nxt-todo"><i>·</i>no touched paths</div>'
@@ -5731,7 +5701,253 @@ window.__ModuleLoader__.load({
         let chartFrom = []
         let chartTo = []
         let chartT0 = 0
+        let latestChartView = null
         const cardChartStates = new Map()
+        const drawBarCanvas = (canvas, pct, color) => {
+          const cssW = canvas.clientWidth
+          const cssH = canvas.clientHeight
+          if (cssW < 2 || cssH < 2) return
+          const barDpr = Math.min(2, window.devicePixelRatio || 1)
+          const backingW = Math.round(cssW * barDpr)
+          const backingH = Math.round(cssH * barDpr)
+          if (canvas.width !== backingW) canvas.width = backingW
+          if (canvas.height !== backingH) canvas.height = backingH
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+          ctx.setTransform(barDpr, 0, 0, barDpr, 0, 0)
+          ctx.clearRect(0, 0, cssW, cssH)
+          ctx.fillStyle = 'rgba(85,255,255,0.14)'
+          ctx.fillRect(0, 0, cssW, cssH)
+          const width = Math.max(0, Math.min(100, pct)) * 0.01 * cssW
+          if (width > 0) {
+            ctx.fillStyle = color || '#55ffff'
+            ctx.fillRect(0, 0, width, cssH)
+          }
+        }
+        const drawPhaseCanvas = (canvas) => {
+          const cssW = canvas.clientWidth
+          const cssH = canvas.clientHeight
+          if (cssW < 2 || cssH < 2) return
+          const phaseDpr = Math.min(2, window.devicePixelRatio || 1)
+          const backingW = Math.round(cssW * phaseDpr)
+          const backingH = Math.round(cssH * phaseDpr)
+          if (canvas.width !== backingW) canvas.width = backingW
+          if (canvas.height !== backingH) canvas.height = backingH
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+          ctx.setTransform(phaseDpr, 0, 0, phaseDpr, 0, 0)
+          ctx.clearRect(0, 0, cssW, cssH)
+          ctx.fillStyle = 'rgba(85,255,255,0.08)'
+          ctx.fillRect(0, 0, cssW, cssH)
+          const segments = [
+            ['think', '#55ffff'],
+            ['act', '#ff55ff'],
+            ['out', '#55ff55'],
+            ['wait', '#555555'],
+          ]
+          let cursor = 0
+          for (const [key, color] of segments) {
+            const value = parseFloat(canvas.getAttribute('data-' + key)) || 0
+            const width = (Math.max(0, value) / 100) * cssW
+            if (width <= 0) continue
+            ctx.fillStyle = color
+            ctx.fillRect(cursor, 0, width, cssH)
+            cursor += width
+          }
+        }
+        const drawUnitVizCanvas = (canvas, agent, kind) => {
+          if (!agent) return
+          if (kind === 0) {
+            drawCanvasSpark(canvas, (agent.tpsHistory || []).slice(-24), agent.color || '#55ffff')
+            return
+          }
+          const cssW = canvas.clientWidth
+          const cssH = canvas.clientHeight
+          if (cssW < 2 || cssH < 2) return
+          const vizDpr = Math.min(2, window.devicePixelRatio || 1)
+          const backingW = Math.round(cssW * vizDpr)
+          const backingH = Math.round(cssH * vizDpr)
+          if (canvas.width !== backingW) canvas.width = backingW
+          if (canvas.height !== backingH) canvas.height = backingH
+          const ctx = canvas.getContext('2d')
+          if (!ctx) return
+          ctx.setTransform(vizDpr, 0, 0, vizDpr, 0, 0)
+          ctx.clearRect(0, 0, cssW, cssH)
+          const color = agent.color || '#55ffff'
+          if (kind === 1) {
+            const bins = new Array(6).fill(0)
+            const now = Date.now()
+            for (const entry of agent.toolLog || []) {
+              const age = now - entry.t
+              if (age < 0 || age > TIMELINE_WINDOW) continue
+              const index = clamp(5 - Math.floor(age / (TIMELINE_WINDOW / 6)), 0, 5)
+              bins[index] += 1
+            }
+            const peak = Math.max(1, ...bins)
+            const barW = cssW / bins.length
+            bins.forEach((value, index) => {
+              const height = value === 0 ? 1 : Math.max(2, (value / peak) * cssH)
+              ctx.globalAlpha = value === 0 ? 0.25 : 0.85
+              ctx.fillStyle = color
+              ctx.fillRect(index * barW + 1, cssH - height, Math.max(1, barW - 2), height)
+            })
+            ctx.globalAlpha = 1
+            return
+          }
+          const durations = (agent.tools || []).slice(-5).map((tool) => tool.ms || 0)
+          const peak = Math.max(1, ...durations)
+          const rowH = cssH / Math.max(1, durations.length)
+          durations.forEach((ms, index) => {
+            const width = ms === 0 ? 2 : Math.max(3, (ms / peak) * cssW)
+            ctx.fillStyle = color
+            ctx.globalAlpha = 0.75
+            ctx.fillRect(0, index * rowH + 0.5, width, Math.max(1, rowH - 1.2))
+          })
+          ctx.globalAlpha = 1
+        }
+        const drawAnalyzeCharts = () => {
+          for (const canvas of root.querySelectorAll('[data-ring-pct]')) {
+            const pct = parseFloat(canvas.getAttribute('data-ring-pct')) || 0
+            const value = canvas.getAttribute('data-ring-value') || ''
+            const sub = canvas.getAttribute('data-ring-sub') || ''
+            const hot = canvas.getAttribute('data-ring-hot') === '1'
+            const cssW = canvas.clientWidth
+            const cssH = canvas.clientHeight
+            if (cssW < 4 || cssH < 4) continue
+            const key = pct + ':' + value + ':' + sub + ':' + hot + ':' + cssW + 'x' + cssH
+            if (canvas.__nxtRingKey === key) continue
+            canvas.__nxtRingKey = key
+            const ringDpr = Math.min(2, window.devicePixelRatio || 1)
+            const backingW = Math.round(cssW * ringDpr)
+            const backingH = Math.round(cssH * ringDpr)
+            if (canvas.width !== backingW) canvas.width = backingW
+            if (canvas.height !== backingH) canvas.height = backingH
+            const ctx = canvas.getContext('2d')
+            if (!ctx) continue
+            ctx.setTransform(ringDpr, 0, 0, ringDpr, 0, 0)
+            ctx.clearRect(0, 0, cssW, cssH)
+            const cx = cssW / 2
+            const cy = cssH / 2
+            const radius = Math.max(10, Math.min(cssW, cssH) * 0.36)
+            ctx.lineWidth = Math.max(4, Math.min(cssW, cssH) * 0.065)
+            ctx.strokeStyle = 'rgba(85,255,255,0.14)'
+            ctx.beginPath()
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2)
+            ctx.stroke()
+            ctx.strokeStyle = hot ? '#ff55ff' : '#55ffff'
+            ctx.beginPath()
+            ctx.arc(cx, cy, radius, -Math.PI / 2, -Math.PI / 2 + (Math.PI * 2 * Math.max(0, Math.min(100, pct))) / 100)
+            ctx.stroke()
+            ctx.textAlign = 'center'
+            ctx.textBaseline = 'middle'
+            ctx.fillStyle = '#ffffff'
+            ctx.font = '600 ' + Math.max(12, Math.round(Math.min(cssW, cssH) * 0.14)) + 'px "JetBrains Mono",Consolas,monospace'
+            ctx.fillText(value, cx, cy - cssH * 0.04)
+            ctx.fillStyle = '#55ffff'
+            ctx.font = '8px "JetBrains Mono",Consolas,monospace'
+            ctx.fillText(sub, cx, cy + cssH * 0.13)
+          }
+          for (const canvas of root.querySelectorAll('[data-matrix-values]')) {
+            const values = String(canvas.getAttribute('data-matrix-values') || '').split(',').map(Number)
+            const max = Math.max(1, Number(canvas.getAttribute('data-matrix-max')) || 1)
+            const cssW = canvas.clientWidth
+            const cssH = canvas.clientHeight
+            if (cssW < 4 || cssH < 4) continue
+            const key = cssW + 'x' + cssH + ':' + max + ':' + values.join(',')
+            if (canvas.__nxtMatrixKey === key) continue
+            canvas.__nxtMatrixKey = key
+            const mxDpr = Math.min(2, window.devicePixelRatio || 1)
+            if (canvas.width !== Math.round(cssW * mxDpr)) canvas.width = Math.round(cssW * mxDpr)
+            if (canvas.height !== Math.round(cssH * mxDpr)) canvas.height = Math.round(cssH * mxDpr)
+            const ctx = canvas.getContext('2d')
+            if (!ctx) continue
+            ctx.setTransform(mxDpr, 0, 0, mxDpr, 0, 0)
+            ctx.clearRect(0, 0, cssW, cssH)
+            const gap = 2
+            const cellW = (cssW - gap * Math.max(0, values.length - 1)) / Math.max(1, values.length)
+            values.forEach((cell, index) => {
+              ctx.fillStyle = 'rgba(85,255,255,' + (cell === 0 ? 0.06 : 0.2 + 0.8 * (cell / max)).toFixed(2) + ')'
+              ctx.fillRect(index * (cellW + gap), 0, cellW, cssH)
+            })
+          }
+          for (const canvas of root.querySelectorAll('[data-lane-segments]')) {
+            let segments = []
+            try {
+              segments = JSON.parse(decodeURIComponent(canvas.getAttribute('data-lane-segments') || '[]'))
+            } catch (err) {
+              segments = []
+            }
+            const cssW = canvas.clientWidth
+            const cssH = canvas.clientHeight
+            if (cssW < 4 || cssH < 4) continue
+            const key = cssW + 'x' + cssH + ':' + JSON.stringify(segments)
+            if (canvas.__nxtLaneKey === key) continue
+            canvas.__nxtLaneKey = key
+            const laneDpr = Math.min(2, window.devicePixelRatio || 1)
+            if (canvas.width !== Math.round(cssW * laneDpr)) canvas.width = Math.round(cssW * laneDpr)
+            if (canvas.height !== Math.round(cssH * laneDpr)) canvas.height = Math.round(cssH * laneDpr)
+            const ctx = canvas.getContext('2d')
+            if (!ctx) continue
+            ctx.setTransform(laneDpr, 0, 0, laneDpr, 0, 0)
+            ctx.clearRect(0, 0, cssW, cssH)
+            for (const segment of segments) {
+              ctx.fillStyle = segment[2] || '#55ffff'
+              ctx.fillRect((segment[0] / 100) * cssW, 0, Math.max(1, (segment[1] / 100) * cssW), cssH)
+            }
+          }
+          if (latestChartView) {
+            for (const canvas of root.querySelectorAll('[data-analyze-tps-id]')) {
+              const id = canvas.getAttribute('data-analyze-tps-id')
+              const agent = (latestChartView.agents || []).find((item) => item.id === id)
+              if (!agent) continue
+              const history = (agent.tpsHistory || []).slice(-48)
+              const key = history.length + ':' + shownTps(agent).toFixed(1) + ':' + (agent.color || '')
+              if (canvas.__nxtAnalyzeKey === key) continue
+              canvas.__nxtAnalyzeKey = key
+              drawCanvasSpark(canvas, history.length > 1 ? history : [0, 0], agent.color || '#55ffff')
+            }
+          }
+        }
+        const drawInlineCharts = (now) => {
+          const bars = Array.from(root.querySelectorAll('[data-bar]'))
+          const maxByKind = new Map()
+          for (const bar of bars) {
+            const kind = bar.getAttribute('data-bar')
+            if (kind === 'phase' || kind === 'ctxpct') continue
+            const value = parseFloat(bar.getAttribute('data-value')) || 0
+            maxByKind.set(kind, Math.max(maxByKind.get(kind) || 0, value))
+          }
+          for (const bar of bars) {
+            const kind = bar.getAttribute('data-bar')
+            if (kind === 'phase') {
+              drawPhaseCanvas(bar)
+              continue
+            }
+            const value = parseFloat(bar.getAttribute('data-value')) || 0
+            const max = kind === 'ctxpct' ? 100 : Math.max(1, maxByKind.get(kind) || 1)
+            let pct = kind === 'ctxpct' ? value : (value / max) * 100
+            if (value > 0 && pct < 4) pct = 4
+            const color =
+              kind === 'file' ? '#ff55ff' : bar.getAttribute('data-err') === '1' ? '#ff5555' : '#55ffff'
+            const key = kind + ':' + value + ':' + max + ':' + color
+            if (bar.__nxtBarKey === key) continue
+            bar.__nxtBarKey = key
+            drawBarCanvas(bar, pct, color)
+          }
+          if (latestChartView) {
+            for (const canvas of root.querySelectorAll('[data-viz-id]')) {
+              const agent = (latestChartView.agents || []).find((item) => item.id === canvas.getAttribute('data-viz-id'))
+              const kind = Number.parseInt(canvas.getAttribute('data-viz-kind'), 10) || 0
+              const key = agent
+                ? agent.state + ':' + shownTps(agent).toFixed(1) + ':' + (agent.tools || []).length + ':' + kind
+                : 'none'
+              if (canvas.__nxtVizKey === key) continue
+              canvas.__nxtVizKey = key
+              drawUnitVizCanvas(canvas, agent, kind)
+            }
+          }
+          drawAnalyzeCharts()
+        }
         const readCardCharts = (view, now) => {
           const seen = new Set()
           for (const agent of view.agents || []) {
@@ -5759,6 +5975,7 @@ window.__ModuleLoader__.load({
           if (now - lastChartRead >= 100) {
             const chartView = readView()
             if (chartView) {
+              latestChartView = chartView
               const next = (chartView.history || []).slice(-56)
               if (next.length > 1) {
                 const t = chartTo.length ? Math.min(1, (now - chartT0) / 100) : 1
@@ -5782,6 +5999,7 @@ window.__ModuleLoader__.load({
             const t = state.t0 ? Math.min(1, (now - state.t0) / 100) : 1
             drawCanvasSpark(cardCanvas, mixSeries(state.from, state.to, t), state.color)
           }
+          drawInlineCharts(now)
         }
         stepCharts()
         const stopStage = startStage(canvas, () => stageStateRef.current, (id) => {

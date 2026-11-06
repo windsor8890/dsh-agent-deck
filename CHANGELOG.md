@@ -43,6 +43,9 @@
   10Hz samples; the old SVG charts visibly stepped at the repaint cadence.
 - Agent-unit card sparklines use the same 30fps Canvas/interpolation path, so the small
   per-unit curves no longer jump on the slow card repaint.
+- Every remaining rendered chart is now Canvas: tool-mix/file/context/latency bars,
+  per-unit mini charts, phase stacked bar/timeline, tool-matrix heatmap, context/task
+  rings and the focused THRUPUT trace. No SVG charts remain in the live UI.
 - Wall clock is screen-anchored to the visible top-right wall; the throughput/tool-load
   monitors now sit below it instead of covering it.
 - Removed the unexplained decorative hexagonal wall emblem.
