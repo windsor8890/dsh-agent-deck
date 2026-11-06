@@ -83,8 +83,8 @@ window.__ModuleLoader__.load({
 
     const DICT = {
       zh: {
-        panel: '监控室',
-        title: '监控室',
+        panel: 'Agent Deck',
+        title: 'Agent Deck',
         intro: '实时观看每个工作中的智能体的思考、执行与输出',
         standby: '暂无工作中的智能体',
         standbyHint: '派一个任务给任意会话，它的遥测会在这里亮起',
@@ -118,7 +118,7 @@ window.__ModuleLoader__.load({
         error: '异常',
       },
       en: {
-        panel: 'Control Room',
+        panel: 'Agent Deck',
         title: 'Agent Deck',
         intro: "Watch every working agent's thinking, tool calls and output live",
         standby: 'NO ACTIVE UNITS',

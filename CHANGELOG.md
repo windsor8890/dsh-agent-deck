@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Renamed the sidebar/panel entry from `监控室 / Control Room` to the product name `Agent Deck`.
+
 ## 0.6.0 — 2026-11-07
 
 ### Added

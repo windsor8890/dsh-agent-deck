@@ -32,7 +32,7 @@ Agent Deck is a read-only multi-agent telemetry console for the DSH Web GUI. It 
 
 ## Usage
 
-1. Open the DSH Web GUI and choose **Control Room** in the left sidebar.
+1. Open the DSH Web GUI and choose **Agent Deck** in the left sidebar.
 2. `OFFICE` is the default stage; switch with `RADAR / NET` at the top of the stage.
 3. Click an `AGENT UNITS` card at the bottom or an office desk to focus an agent; press `Esc` or click `× RELEASE` to return.
 4. Click `↗` on a card to open that session.
