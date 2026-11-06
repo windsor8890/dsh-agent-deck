@@ -12,7 +12,9 @@
 
 ## Whale-girl
 
-Our DIY whale-girl, seven state poses:
+Our DIY whale-girl, seven state poses. This four-frame action loop was assembled from PNG keyframes (idle / working / slacking / gaming):
+
+![Whale-girl action loop](docs/whale-girl-actions.gif)
 
 | State | Pose | Meaning |
 |---|---|---|
