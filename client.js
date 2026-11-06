@@ -1454,41 +1454,6 @@ window.__ModuleLoader__.load({
 .nxt-feed-i[data-k="sys"]{color:#55ffff}
 .nxt-feed-i[data-k="none"]{color:#555555}
 
-/* Bottom event rail lives inside the middle stage panel, not below the body. */
-.nxt-bottom{display:flex; gap:8px; flex:none; height:clamp(96px, 19%, 150px); min-height:0; padding:6px 8px 8px;
-  overflow:hidden; border-top:1px solid rgba(85,255,255,0.10); background:rgba(0,0,0,0.36)}
-.nxt-bottom .nxt-panel{min-height:0}
-.nxt-streampanel{flex:1 1 auto; min-width:0}
-.nxt-queuepanel{flex:0 0 27%; min-width:190px}
-.nxt-ev-list{display:flex; flex-direction:column; gap:2px; padding:5px 8px; overflow-y:auto; min-height:0; flex:1 1 auto; scrollbar-width:thin}
-.nxt-ev-list::-webkit-scrollbar{width:6px}
-.nxt-ev-list::-webkit-scrollbar-thumb{background:rgba(85,255,255,0.25)}
-.nxt-ev{display:flex; align-items:baseline; gap:7px; min-width:0; white-space:nowrap; overflow:hidden; font-size:9px; line-height:1.55}
-.nxt-ev .nxt-ev-t{color:#555555; flex:none; font-variant-numeric:tabular-nums; font-size:8px}
-.nxt-ev .nxt-ev-dot{width:4px; height:4px; flex:none; background:currentColor; transform:translateY(-1px)}
-.nxt-ev .nxt-ev-tag{flex:none; color:#ff55ff; max-width:104px; overflow:hidden; text-overflow:ellipsis}
-.nxt-ev .nxt-ev-msg{min-width:0; overflow:hidden; text-overflow:ellipsis; color:#aaaaaa}
-.nxt-ev[data-k="err"]{color:#ff5555}
-.nxt-ev[data-k="err"] .nxt-ev-msg{color:#ff5555}
-.nxt-ev[data-k="wait"]{color:#ffff55}
-.nxt-ev[data-k="wait"] .nxt-ev-msg{color:#ffff55}
-.nxt-ev[data-k="done"]{color:#55ff55}
-.nxt-ev[data-k="done"] .nxt-ev-msg{color:#55ff55}
-.nxt-ev[data-k="unit"]{color:#ff55ff}
-.nxt-ev[data-k="sys"]{color:#55ffff}
-.nxt-ev-empty{display:flex; align-items:center; justify-content:center; flex:1; color:#555555; font-size:8px; letter-spacing:.16em}
-.nxt-queue-list{display:flex; flex-direction:column; gap:3px; padding:4px 7px; overflow-y:auto; min-height:0; flex:1 1 auto}
-.nxt-queue-row{display:flex; align-items:center; gap:5px; width:100%; min-width:0; cursor:pointer; text-align:left;
-  border:1px solid rgba(255,255,255,0.10); background:rgba(10,10,10,0.5); color:#aaaaaa; padding:3px 5px;
-  font:600 8px/1.2 "JetBrains Mono","Cascadia Mono",Consolas,monospace; letter-spacing:.06em}
-.nxt-queue-row:hover{border-color:var(--nxt-frame); color:#ffffff}
-.nxt-queue-row .nxt-qtag{flex:none; color:#ff55ff}
-.nxt-queue-row .nxt-qstate{flex:none; font-size:7px; letter-spacing:.08em}
-.nxt-queue-row[data-state="wait"] .nxt-qstate{color:#ffff55}
-.nxt-queue-row[data-state="err"] .nxt-qstate{color:#ff5555}
-.nxt-queue-row .nxt-qname{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; color:#aaaaaa}
-.nxt-cinema .nxt-bottom{padding-left:14px; padding-right:14px; height:clamp(110px, 18%, 170px)}
-
 .nxt-vig{position:absolute; inset:0; pointer-events:none; z-index:6}
 .nxt-vig{background:radial-gradient(125% 95% at 50% 42%, transparent 44%, rgba(0,0,0,.6) 100%)}
 
@@ -1716,16 +1681,6 @@ window.__ModuleLoader__.load({
         <div class="nxt-stage-tag" id="nxt-stage-tag"></div>
         <div class="nxt-standby-tray" id="nxt-standby-tray" hidden></div>
         <div class="nxt-legend" id="nxt-legend"></div>
-      </div>
-      <div class="nxt-bottom">
-        <div class="nxt-panel nxt-streampanel">
-          <div class="nxt-phead"><span>EVENT STREAM</span><span class="nxt-phint" id="nxt-stream-hint">PRIORITY · RECENT</span></div>
-          <div class="nxt-ev-list" id="nxt-stream-list"></div>
-        </div>
-        <div class="nxt-panel nxt-queuepanel">
-          <div class="nxt-phead"><span>WAITING / ERRORS</span><span class="nxt-phint" id="nxt-queue-hint">0</span></div>
-          <div class="nxt-queue-list" id="nxt-queue-list"></div>
-        </div>
       </div>
     </div>
     <div class="nxt-panel nxt-railpanel">
@@ -2539,74 +2494,6 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function clockOf(t) {
-      const date = new Date(t)
-      return pad2(date.getHours()) + ':' + pad2(date.getMinutes()) + ':' + pad2(date.getSeconds())
-    }
-
-    function eventStreamHtml(view) {
-      const events = []
-      const live = ((view && view.agents) || []).filter((agent) => !agent.held)
-      for (const line of (view.log || []).slice(-8)) {
-        const kind = line.kind === 'err' ? 'err' : line.kind === 'unit' ? 'unit' : 'sys'
-        events.push({ t: line.t, kind, tag: String(line.kind || 'sys').toUpperCase(), text: line.text })
-      }
-      for (const call of (view.recentCalls || []).slice(-6)) {
-        events.push({
-          t: call.t,
-          kind: call.state === 'err' ? 'err' : 'done',
-          tag: 'TOOL',
-          text: (call.name || 'tool') + (call.arg ? ' · ' + call.arg : '') + (call.ms ? ' · ' + fmtMs(call.ms) : ''),
-        })
-      }
-      for (const agent of live) {
-        if (agent.state !== 'err' && agent.state !== 'wait') continue
-        events.push({
-          t: Date.now(),
-          kind: agent.state === 'err' ? 'err' : 'wait',
-          tag: agent.tag,
-          text: (agent.name || agent.id) + ' · ' + (agent.state === 'err' ? 'ERROR' : agent.pending ? 'NEEDS INPUT' : 'WAITING'),
-        })
-      }
-      events.sort((a, b) => b.t - a.t)
-      const seen = new Set()
-      const rows = []
-      for (const event of events) {
-        const key = event.kind + '|' + event.tag + '|' + event.text
-        if (seen.has(key)) continue
-        seen.add(key)
-        rows.push(event)
-        if (rows.length >= 10) break
-      }
-      if (rows.length === 0) return '<div class="nxt-ev-empty">AWAITING TELEMETRY</div>'
-      return rows
-        .map(
-          (event) =>
-            '<div class="nxt-ev" data-k="' + esc(event.kind) + '"><span class="nxt-ev-t">' + clockOf(event.t) +
-            '</span><i class="nxt-ev-dot"></i><span class="nxt-ev-tag">' + esc(event.tag) + '</span>' +
-            '<span class="nxt-ev-msg" title="' + esc(event.text) + '">' + esc(event.text) + '</span></div>',
-        )
-        .join('')
-    }
-
-    function queueHtml(view) {
-      const live = ((view && view.agents) || []).filter((agent) => !agent.held)
-      const waiting = live.filter((agent) => agent.state === 'wait' || agent.state === 'err')
-      if (waiting.length === 0) {
-        return '<div class="nxt-ev-empty">' + (live.length > 0 ? 'ALL CLEAR · ' + live.length + ' RUNNING' : 'NO LIVE UNITS') + '</div>'
-      }
-      return waiting
-        .slice(0, 8)
-        .map(
-          (agent) =>
-            '<button type="button" class="nxt-queue-row" data-id="' + esc(agent.id) + '" data-state="' + esc(agent.state) + '" title="' +
-            esc((agent.name || agent.id) + '\nCLICK: FOCUS') + '">' +
-            '<span class="nxt-qtag" style="color:' + esc(agent.color) + '">' + esc(agent.tag) + '</span>' +
-            '<span class="nxt-qstate">' + (agent.state === 'err' ? 'ERR' : agent.pending ? 'INPUT' : 'WAIT') + '</span>' +
-            '<span class="nxt-qname">' + esc(agent.name || agent.id) + '</span></button>',
-        )
-        .join('')
-    }
     //#endregion
 
     //#region canvas stage
@@ -5364,10 +5251,6 @@ window.__ModuleLoader__.load({
           wallHint: $('nxt-wallhint'),
           rail: $('nxt-rail'),
           ticker: $('nxt-ticker'),
-          stream: $('nxt-stream-list'),
-          queue: $('nxt-queue-list'),
-          streamHint: $('nxt-stream-hint'),
-          queueHint: $('nxt-queue-hint'),
           stage: $('nxt-stage'),
           analyze: $('nxt-analyze'),
           prefs: $('nxt-prefs'),
@@ -5476,11 +5359,6 @@ window.__ModuleLoader__.load({
           }
           setHtml(refs.rail, railHtml(view))
           setHtml(refs.ticker, tickerHtml(view))
-          setHtml(refs.stream, eventStreamHtml(view))
-          setHtml(refs.queue, queueHtml(view))
-          const queueCount = view.agents.filter((agent) => !agent.held && (agent.state === 'wait' || agent.state === 'err')).length
-          if (refs.streamHint) refs.streamHint.textContent = 'PRIORITY · RECENT'
-          if (refs.queueHint) refs.queueHint.textContent = queueCount + ' WAITING'
           const focusedAgent = view.agents.find((agent) => agent.id === focusRef.current)
           if (!focusedAgent && focusRef.current) focusRef.current = null
           const mode = modeRef.current
