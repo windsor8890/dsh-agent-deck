@@ -37,6 +37,11 @@
 - Removed the two procedural foreground potted plants.
 - Performance pass: the office canvas renders at 20fps while agents work and 12fps when
   idle, caps its backing DPR at 1.25, and pauses entirely when the panel is not visible.
+- Raised office motion to 30fps while agents are active and 20fps when idle; the DOM
+  throttling and hidden-panel pause remain.
+- Wall clock is screen-anchored to the visible top-right wall; the throughput/tool-load
+  monitors now sit below it instead of covering it.
+- Removed the unexplained decorative hexagonal wall emblem.
 - Telemetry DOM repaints are throttled (300ms light / 900ms heavy), collapsed rail groups
   are not inserted into the DOM, and hidden panels stop all plugin work.
 - Compact stage HUD: only throughput trend, tool mix and recent calls; no repeated

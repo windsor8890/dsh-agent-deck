@@ -3588,8 +3588,8 @@ window.__ModuleLoader__.load({
       let dpr = 1
       let wasHidden = false
       let lastFrame = 0
-      const idleFrameInterval = 1000 / 12
-      const activeFrameInterval = 1000 / 20
+      const idleFrameInterval = 1000 / 20
+      const activeFrameInterval = 1000 / 30
       let resizeObserver = null
       // Social visits can run concurrently (up to three): each visitor keeps her
       // own walk/chat timeline and occupancy is tracked per visit.
@@ -3662,8 +3662,8 @@ window.__ModuleLoader__.load({
         const state = readState()
         if (state.paused) return
         const now = performance.now()
-        // The office is ambient: active work gets 20fps, an idle room 12fps.
-        // This halves canvas raster cost without touching the DOM UI.
+        // The office is ambient: active work gets 30fps, an idle room 20fps.
+        // This keeps motion readable without the old full-rate DOM cost.
         const active = !reduceMotion && (state.agents || []).some((agent) => agent.state === 'run' || agent.state === 'wait')
         const frameInterval = reduceMotion ? 1000 / 10 : active ? activeFrameInterval : idleFrameInterval
         if (now - lastFrame < frameInterval) return
@@ -4181,7 +4181,7 @@ window.__ModuleLoader__.load({
         context.fillText('SECTOR 07 · NIGHT SHIFT', winA.x + winW / 2, winA.y + 11)
         context.restore()
 
-        // signage / emblem / clock
+        // signage / clock
         const signAnchor = iso(minX + 0.5, minY, wallH - 0.3)
         context.save()
         context.textAlign = 'left'
@@ -4200,21 +4200,12 @@ window.__ModuleLoader__.load({
           signAnchor.x,
           signAnchor.y + Math.round(s * 0.2),
         )
-        const emblem = iso(minX + 0.5, minY, wallH - 1.0)
-        const er = s * 0.19
-        context.strokeStyle = 'rgba(85,255,255,0.55)'
-        context.lineWidth = 1.2
-        context.beginPath()
-        for (let corner = 0; corner < 6; corner++) {
-          const angle = (corner / 6) * Math.PI * 2 - Math.PI / 2
-          const px = emblem.x + Math.cos(angle) * er
-          const py = emblem.y + Math.sin(angle) * er
-          if (corner === 0) context.moveTo(px, py)
-          else context.lineTo(px, py)
+        // Clock is screen-anchored to the visible top-right wall, so the data
+        // panels below can never cover it.
+        const clockAnchor = {
+          x: Math.max(60, areaW - Math.max(48, s * 0.9)),
+          y: Math.max(90, wallTopScreen + Math.max(42, s * 0.8)),
         }
-        context.closePath()
-        context.stroke()
-        const clockAnchor = iso(maxX - 1.4, minY, wallH - 0.75)
         const clockR = Math.max(9, s * 0.22)
         context.beginPath()
         context.arc(clockAnchor.x, clockAnchor.y, clockR, 0, Math.PI * 2)
@@ -4294,7 +4285,7 @@ window.__ModuleLoader__.load({
           context.restore()
         }
         const wallPw = Math.max(52, s * 1.45)
-        const panelY = Math.max(70, wallTopScreen + 58)
+        const panelY = Math.max(120, clockAnchor.y + clockR + 16)
         wallPanel(areaW - 2 * wallPw - 26, panelY, 'THROUGHPUT', history, 'line', '#55ffff')
         wallPanel(areaW - wallPw - 12, panelY, 'TOOL LOAD', toolStats.slice(0, 8).map((stat) => stat.calls), 'bars', '#55ff55')
 
