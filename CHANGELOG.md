@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- Raised the supervisor callout above the chief, enlarged the wall clock, and regrouped the two wall monitors into a mounted OPS FEED board.
+
 ## 0.6.2 — 2026-11-07
 
 ### Fixed
