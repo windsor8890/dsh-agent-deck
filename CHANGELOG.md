@@ -34,6 +34,11 @@
   seats and does not consume a session slot.
 - Shifted the 8 agent desks slightly left and moved the podium further right, leaving a
   clear walkway and visual gap between the last desk column and the supervisor.
+- Removed the two procedural foreground potted plants.
+- Performance pass: the office canvas renders at 20fps while agents work and 12fps when
+  idle, caps its backing DPR at 1.25, and pauses entirely when the panel is not visible.
+- Telemetry DOM repaints are throttled (300ms light / 900ms heavy), collapsed rail groups
+  are not inserted into the DOM, and hidden panels stop all plugin work.
 - Compact stage HUD: only throughput trend, tool mix and recent calls; no repeated
   ACTIVE/TOOLS/ERRORS counters.
 - KPI de-duplication: the global top bar keeps only LIVE/AGENTS/CLOCK; the stage battle bar

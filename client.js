@@ -2523,10 +2523,12 @@ window.__ModuleLoader__.load({
           '<div class="nxt-sys"><span>UNITS TRACKED</span><b>' + totals.count + '</b></div>',
       )
 
-      const groupBox = (key, title, hint, body) =>
-        '<div class="nxt-group" data-open="' + (open && open[key] ? '1' : '0') + '">' +
-        '<button type="button" class="nxt-group-h" data-rail-group="' + key + '"><span>' + title + '</span><span>' + hint + '</span></button>' +
-        '<div class="nxt-group-body">' + body + '</div></div>'
+      const groupBox = (key, title, hint, body) => {
+        const openGroup = Boolean(open && open[key])
+        return '<div class="nxt-group" data-open="' + (openGroup ? '1' : '0') + '">' +
+          '<button type="button" class="nxt-group-h" data-rail-group="' + key + '"><span>' + title + '</span><span>' + hint + '</span></button>' +
+          '<div class="nxt-group-body">' + (openGroup ? body : '') + '</div></div>'
+      }
       return (
         attention +
         groupBox('runtime', 'RUNTIME', 'LIVE', global + thruput + units + standby + ctx + toolMixBlock) +
@@ -3585,6 +3587,9 @@ window.__ModuleLoader__.load({
       let height = 0
       let dpr = 1
       let wasHidden = false
+      let lastFrame = 0
+      const idleFrameInterval = 1000 / 12
+      const activeFrameInterval = 1000 / 20
       let resizeObserver = null
       // Social visits can run concurrently (up to three): each visitor keeps her
       // own walk/chat timeline and occupancy is tracked per visit.
@@ -3641,7 +3646,7 @@ window.__ModuleLoader__.load({
         const cssWidth = Math.floor(rect.width)
         const cssHeight = Math.floor(rect.height)
         if (cssWidth <= 0 || cssHeight <= 0) return false
-        const nextDpr = Math.min(2, window.devicePixelRatio || 1)
+        const nextDpr = Math.min(1.25, window.devicePixelRatio || 1)
         const backingWidth = Math.floor(cssWidth * nextDpr)
         const backingHeight = Math.floor(cssHeight * nextDpr)
         width = cssWidth
@@ -3655,7 +3660,14 @@ window.__ModuleLoader__.load({
       function draw() {
         raf = window.requestAnimationFrame(draw)
         const state = readState()
+        if (state.paused) return
         const now = performance.now()
+        // The office is ambient: active work gets 20fps, an idle room 12fps.
+        // This halves canvas raster cost without touching the DOM UI.
+        const active = !reduceMotion && (state.agents || []).some((agent) => agent.state === 'run' || agent.state === 'wait')
+        const frameInterval = reduceMotion ? 1000 / 10 : active ? activeFrameInterval : idleFrameInterval
+        if (now - lastFrame < frameInterval) return
+        lastFrame = now
         const dt = lastSample === 0 ? 16 : Math.min(120, now - lastSample)
         lastSample = now
         if (!reduceMotion) angle += dt * 0.00035 * (1 + Math.min(6, state.totals.tps) * 0.12)
@@ -5030,29 +5042,6 @@ window.__ModuleLoader__.load({
           context.restore()
         }
 
-        // foreground plants
-        const drawPlant = (worldX, worldY, size) => {
-          const base = iso(worldX, worldY, 0)
-          const potW = s * size * 0.3
-          context.save()
-          context.fillStyle = 'rgba(14,14,14,1)'
-          context.fillRect(base.x - potW / 2, base.y - potW * 0.9, potW, potW * 0.9)
-          context.strokeStyle = 'rgba(85,255,85,0.7)'
-          context.lineWidth = 1
-          context.strokeRect(base.x - potW / 2, base.y - potW * 0.9, potW, potW * 0.9)
-          for (let leaf = 0; leaf < 6; leaf++) {
-            const angle = -Math.PI / 2 + (leaf - 2.5) * 0.38
-            context.beginPath()
-            context.moveTo(base.x, base.y - potW * 0.9)
-            context.lineTo(base.x + Math.cos(angle) * s * size * 0.8, base.y - potW * 0.9 + Math.sin(angle) * s * size * 0.8)
-            context.strokeStyle = leaf % 2 === 0 ? 'rgba(85,255,85,0.8)' : 'rgba(85,255,85,0.45)'
-            context.stroke()
-          }
-          context.restore()
-        }
-        drawPlant(maxX - 0.5, maxY - 0.35, 1.0)
-        drawPlant(minX + 0.7, maxY - 0.5, 0.8)
-
         if (agents.length === 0) {
           // idle sign on the foreground floor, clear of the desks
           context.save()
@@ -5444,9 +5433,11 @@ window.__ModuleLoader__.load({
         focused: null,
         mode: 'office',
         hidden: false,
+        paused: false,
         topology: { nodes: [], edges: [] },
         prefs: prefsRef.current,
       })
+      const visibleRef = useRef(true)
       const lastRevRef = useRef(-1)
 
       useEffect(() => {
@@ -5510,26 +5501,37 @@ window.__ModuleLoader__.load({
           if (element.scrollTop !== top) element.scrollTop = top
         }
 
-        const paint = () => {
+        let lastPaintAt = -Infinity
+        let lastHeavyPaintAt = -Infinity
+        const paint = (force = false) => {
           const view = readView()
-          if (!view) return
+          if (!view || !visibleRef.current) return
+          const paintNow = performance.now()
+          // The snapshot changes at 10Hz; rebuilding the whole rail and filmstrip
+          // at that rate is the largest DOM cost. 5-6Hz is plenty for a monitor.
+          if (!force && paintNow - lastPaintAt < 300) return
+          lastPaintAt = paintNow
+          const heavyDue = force || paintNow - lastHeavyPaintAt >= 900
+          if (heavyDue) lastHeavyPaintAt = paintNow
           if (refs.clock) refs.clock.textContent = fmtClock(new Date())
           if (refs.count) refs.count.textContent = String(view.totals.count)
           const liveAgents = view.agents.filter((agent) => !agent.held)
           const prefs = prefsRef.current
           const hover = hoverRef.current
           setHtml(refs.battle, battleHtml(view))
-          const filmSummary = liveAgents.length < 3 ? roomSummaryHtml(view) : ''
-          setHtml(
-            refs.wall,
-            (liveAgents.length > 0
-              ? liveAgents.slice(0, MAX_CARDS).map((agent) => cardHtml(agent, focusRef.current, hover, legendRef.current)).join('')
-              : standbyHtml(view, prefs)) + filmSummary,
-          )
+          if (heavyDue) {
+            const filmSummary = liveAgents.length < 3 ? roomSummaryHtml(view) : ''
+            setHtml(
+              refs.wall,
+              (liveAgents.length > 0
+                ? liveAgents.slice(0, MAX_CARDS).map((agent) => cardHtml(agent, focusRef.current, hover, legendRef.current)).join('')
+                : standbyHtml(view, prefs)) + filmSummary,
+            )
+          }
           if (refs.strip) {
             const showStrip = liveAgents.length > MAX_CARDS && !focusRef.current
             refs.strip.hidden = !showStrip
-            if (showStrip) setHtml(refs.strip, agentStripHtml(liveAgents, focusRef.current, hover))
+            if (showStrip && heavyDue) setHtml(refs.strip, agentStripHtml(liveAgents, focusRef.current, hover))
           }
           if (refs.legend) {
             setHtml(refs.legend, legendHtml(legendRef.current))
@@ -5543,8 +5545,10 @@ window.__ModuleLoader__.load({
                   ? 'LIVE FEED · ' + liveAgents.length
                   : 'RESIDENT · STANDBY'
           }
-          setHtml(refs.rail, railHtml(view, legendRef.current, railOpenRef.current))
-          setHtml(refs.ticker, tickerHtml(view))
+          if (heavyDue) {
+            setHtml(refs.rail, railHtml(view, legendRef.current, railOpenRef.current))
+            setHtml(refs.ticker, tickerHtml(view))
+          }
           const focusedAgent = view.agents.find((agent) => agent.id === focusRef.current)
           if (!focusedAgent && focusRef.current) focusRef.current = null
           const mode = modeRef.current
@@ -5556,7 +5560,7 @@ window.__ModuleLoader__.load({
           if (refs.stage) refs.stage.classList.toggle('nxt-hud-off', !hudOn)
           root.classList.toggle('nxt-focus-on', Boolean(focusedAgent))
           root.classList.toggle('nxt-cold', Boolean(cinemaRef.current && prefs.cinemaSkin === 'cold'))
-          setHtml(refs.analyze, focusedAgent ? analyzeHtml(focusedAgent) : '')
+          if (heavyDue) setHtml(refs.analyze, focusedAgent ? analyzeHtml(focusedAgent) : '')
           if (refs.prefs) {
             refs.prefs.dataset.open = prefsOpenRef.current ? '1' : '0'
             if (prefsOpenRef.current) setHtml(refs.prefs, prefsHtml(prefs))
@@ -5596,7 +5600,7 @@ window.__ModuleLoader__.load({
           const standbyAgents = view.agents.filter((agent) => agent.deskSlot < 0)
           if (refs.tray) {
             const visibleStandby = standbyAgents.slice(0, 5)
-            setHtml(
+            if (heavyDue) setHtml(
               refs.tray,
               standbyAgents.length > 0
                 ? '<div class="nxt-standby-h">STANDBY +' + standbyAgents.length + '</div>' +
@@ -5628,6 +5632,7 @@ window.__ModuleLoader__.load({
             mode,
             hud: hudOn,
             hidden: Boolean(focusedAgent),
+            paused: !visibleRef.current,
             topology: view.topology || { nodes: [], edges: [] },
             toolBins: view.toolBins || [],
             history: view.history || [],
@@ -5638,10 +5643,31 @@ window.__ModuleLoader__.load({
           }
         }
 
+        // Pause all work when the panel is hidden by the host. Without this the
+        // animation loop and telemetry DOM updates keep running in the background.
+        const syncVisibility = () => {
+          const visible = !document.hidden && visibleRef.current
+          stageStateRef.current = { ...stageStateRef.current, paused: !visible }
+          if (visible) paint(true)
+        }
+        const onVisibilityChange = () => syncVisibility()
+        document.addEventListener('visibilitychange', onVisibilityChange)
+        let visibilityObserver = null
+        if (typeof IntersectionObserver !== 'undefined') {
+          visibilityObserver = new IntersectionObserver(
+            (entries) => {
+              visibleRef.current = Boolean(entries[0] && entries[0].isIntersecting)
+              syncVisibility()
+            },
+            { threshold: 0.01 },
+          )
+          visibilityObserver.observe(root)
+        }
+
         paint()
         const stopStage = startStage(canvas, () => stageStateRef.current, (id) => {
           focusRef.current = id
-          paint()
+          paint(true)
         }, setHover)
 
         const onStore = () => {
@@ -5668,7 +5694,7 @@ window.__ModuleLoader__.load({
         const setCinema = (on) => {
           cinemaRef.current = on
           root.classList.toggle('nxt-cinema', on)
-          paint()
+          paint(true)
         }
 
         const onRootClick = (event) => {
@@ -5678,21 +5704,21 @@ window.__ModuleLoader__.load({
           if (railGroup) {
             const key = railGroup.getAttribute('data-rail-group')
             railOpenRef.current = { ...railOpenRef.current, [key]: !railOpenRef.current[key] }
-            paint()
+            paint(true)
             return
           }
           const modeButton = target.closest('[data-mode]')
           if (modeButton) {
             const picked = modeButton.getAttribute('data-mode')
             modeRef.current = picked === 'net' ? 'net' : picked === 'radar' ? 'radar' : 'office'
-            paint()
+            paint(true)
             return
           }
           const legendButton = target.closest('[data-legend]')
           if (legendButton) {
             const picked = legendButton.getAttribute('data-legend')
             legendRef.current = picked === 'all' || picked === legendRef.current ? null : picked
-            paint()
+            paint(true)
             return
           }
           if (target.closest('[data-cinema]')) {
@@ -5701,12 +5727,12 @@ window.__ModuleLoader__.load({
           }
           if (target.closest('[data-prefs]')) {
             prefsOpenRef.current = !prefsOpenRef.current
-            paint()
+            paint(true)
             return
           }
           if (target.closest('[data-prefs-close]')) {
             prefsOpenRef.current = false
-            paint()
+            paint(true)
             return
           }
           const prefButton = target.closest('[data-pref]')
@@ -5721,12 +5747,12 @@ window.__ModuleLoader__.load({
             else if (key === 'cinemaSkin') next.cinemaSkin = raw === 'cold' ? 'cold' : 'cozy'
             prefsRef.current = next
             savePrefs(next)
-            paint()
+            paint(true)
             return
           }
           if (target.closest('[data-focus-release]')) {
             focusRef.current = null
-            paint()
+            paint(true)
             return
           }
           const nav = target.closest('[data-nav]')
@@ -5747,7 +5773,7 @@ window.__ModuleLoader__.load({
           const id = card.getAttribute('data-id')
           if (!id) return
           focusRef.current = focusRef.current === id ? null : id
-          paint()
+          paint(true)
         }
 
         const onKeyDown = (event) => {
@@ -5758,13 +5784,13 @@ window.__ModuleLoader__.load({
             if (prefsOpenRef.current) {
               event.preventDefault()
               prefsOpenRef.current = false
-              paint()
+              paint(true)
               return
             }
             if (focusRef.current) {
               event.preventDefault()
               focusRef.current = null
-              paint()
+              paint(true)
               return
             }
             if (cinemaRef.current) {
@@ -5780,7 +5806,7 @@ window.__ModuleLoader__.load({
             if (agent) {
               event.preventDefault()
               focusRef.current = agent.id
-              paint()
+              paint(true)
             }
             return
           }
@@ -5792,7 +5818,7 @@ window.__ModuleLoader__.load({
           if (event.key === 'm' || event.key === 'M') {
             event.preventDefault()
             modeRef.current = modeRef.current === 'office' ? 'radar' : modeRef.current === 'radar' ? 'net' : 'office'
-            paint()
+            paint(true)
           }
         }
         function setHover(id) {
@@ -5830,6 +5856,8 @@ window.__ModuleLoader__.load({
           stopStage()
           unsubscribe()
           window.clearInterval(clockTimer)
+          if (visibilityObserver) visibilityObserver.disconnect()
+          document.removeEventListener('visibilitychange', onVisibilityChange)
           root.removeEventListener('click', onRootClick)
           root.removeEventListener('mouseover', onRootHover)
           root.removeEventListener('mouseout', onRootOut)
