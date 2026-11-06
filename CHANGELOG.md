@@ -1,0 +1,25 @@
+# Changelog
+
+## 0.5.0 — 2026-11-06
+
+### Added
+
+- DIY whale-girl state sprites: default, idle, working, walking, slacking, gaming, error.
+- Seven-state gallery and bilingual README (Chinese / English) with light and dark screenshots.
+- Concurrent social visits with delegation preference, distance-based timing, curved paths and depth layering.
+- State-driven desk actions: waiting for a human shows the phone, idle WAIT alternates phone/game, retained sessions sleep.
+- Empty-office resident: idle whale-girl at desk `#00` plus a standby terminal card.
+- `PREFS` panel: visits on/off, visit pace, max visitors, desk actions; stored in `localStorage`.
+- Explicit `↗` open-session action; focus mode has a visible `× RELEASE` button.
+- WebP q95 sprites (roughly half the bundle size of the previous PNG base64 assets).
+- `npm test` hermetic checks and GitHub Actions workflow.
+- Manual runtime/soak checklist under `docs/quality/`.
+- Bilingual README with explicit Chinese/English switching, MIT license, asset notice and social-preview metadata.
+
+### Fixed
+
+- Focus release no longer depends on clicking a hidden card.
+- Visit return leg facing direction; deleted/re-seated visitors are pruned immediately.
+- Light theme no longer inverts the resident whale-girl image.
+- Reduced-motion handling covers desk actions and sprite animation.
+- Visit and action scheduling no longer overlap.

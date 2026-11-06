@@ -1,5 +1,8 @@
 # Runtime soak / manual QA checklist
 
+Latest run: [`run-2026-11-06.md`](run-2026-11-06.md) · Visual baselines:
+[`visual-baselines.md`](visual-baselines.md)
+
 `npm test` (`scripts/check.mjs`) is hermetic: it validates the bundle, embedded
 sprites, module contract, preference/action helpers and docs references. It cannot
 exercise the live canvas, DSH host, real sessions or wall-clock behaviour. Run this

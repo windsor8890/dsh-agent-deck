@@ -8,6 +8,8 @@
 
 ![Agent Deck — dark mode](docs/screenshot-dark.jpg)
 
+![Agent Deck demo](docs/demo.gif)
+
 ## Whale-girl
 
 Our DIY whale-girl, seven state poses:
@@ -60,3 +62,5 @@ No `npm install` or build step is needed; refresh the DSH Web GUI after installi
 ### Let an agent install it
 
 > Install https://github.com/windsor8890/dsh-agent-deck with `dsh plugin --profile <profile> add <absolute-repo-path>`, then refresh the DSH Web GUI.
+
+Code is [MIT licensed](LICENSE); see [ASSETS.md](ASSETS.md) for the whale-girl artwork and screenshot notice.

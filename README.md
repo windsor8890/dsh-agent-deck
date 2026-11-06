@@ -8,6 +8,8 @@
 
 ![Agent Deck 深色模式](docs/screenshot-dark.jpg)
 
+![Agent Deck 界面巡览](docs/demo.gif)
+
 ## 鲸鱼娘形象
 
 DIY 鲸鱼娘形象，共 7 个状态姿势：
@@ -60,3 +62,5 @@ dsh plugin --profile desktop add /path/to/dsh-agent-deck
 ### 让 agent 自行安装
 
 > 请把 https://github.com/windsor8890/dsh-agent-deck 用 `dsh plugin --profile <profile> add <仓库绝对路径>` 安装到当前 DSH profile，然后刷新 Web GUI。
+
+代码采用 [MIT](LICENSE)；角色与截图素材许可见 [ASSETS.md](ASSETS.md)。
