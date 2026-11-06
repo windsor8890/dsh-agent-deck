@@ -4521,11 +4521,13 @@ window.__ModuleLoader__.load({
         // A distinct command desk in the middle aisle: the supervisor/chief sits
         // between the two agent rows instead of occupying one of the 8 unit seats.
         const drawSupervisorStation = () => {
-          const x = 4.25
-          const y = 1.55
-          const w = 2.2
-          const d = 1.15
-          const z = 0.66
+          // A teacher-style podium on the right side, between the two desk rows:
+          // it stays out of the center aisle and does not take a numbered seat.
+          const x = 10.85
+          const y = 1.45
+          const w = 1.9
+          const d = 1.0
+          const z = 0.6
           const gold = '#ffff55'
           const pad = iso(x + w / 2, y + d / 2, 0)
           context.save()
@@ -4541,6 +4543,19 @@ window.__ModuleLoader__.load({
           // chair behind the command desk
           solid(x + w * 0.28, y - 0.52, w * 0.44, 0.3, 0, 0.48, themed('rgba(22,22,18,1)', 'rgba(52,50,42,1)'), themed('rgba(16,16,12,1)', 'rgba(62,60,50,1)'), themed('rgba(12,12,9,1)', 'rgba(72,70,58,1)'), hexA(gold, 0.24))
           solid(x + w * 0.28, y - 0.58, w * 0.44, 0.08, 0.48, 0.98, themed('rgba(25,25,20,1)', 'rgba(58,56,46,1)'), themed('rgba(16,16,12,1)', 'rgba(70,68,56,1)'), themed('rgba(12,12,9,1)', 'rgba(82,78,64,1)'), hexA(gold, 0.35))
+          // resident supervisor: a gold-tinted whale-girl behind the podium,
+          // drawn before the desk so the desktop occludes her legs.
+          drawAgentGirl(
+            context,
+            now,
+            iso(x + w / 2, y - 0.02, 0),
+            Math.max(38, s * 1.25),
+            '#ffb84d',
+            'idle',
+            0.72,
+            u,
+            { reduced: reduceMotion },
+          )
           // desk
           solid(x, y, w, d, 0, z, themed('rgba(30,30,24,1)', 'rgba(72,70,56,1)'), themed('rgba(18,18,14,1)', 'rgba(58,56,46,1)'), themed('rgba(12,12,9,1)', 'rgba(78,75,60,1)'), hexA(gold, 0.55))
           for (const [lx, ly] of [
