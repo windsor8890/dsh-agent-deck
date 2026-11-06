@@ -17,9 +17,9 @@
 - Four-frame whale-girl action loop GIF (idle / working / slacking / gaming) in the README.
 - Two transparent working keyframes embedded as WebP: the `busy` pose now shows a subtle
   typing loop in Canvas while the rest of the states keep the static generated sprites.
-- Bottom event rail: a scrollable `EVENT STREAM` (errors / waits / tools / unit events)
-  plus a clickable `WAITING / ERRORS` queue now fills the lower panel instead of leaving
-  blank host space below the stage HUD.
+- Bottom event rail inside the middle stage panel: a scrollable `EVENT STREAM`
+  (errors / waits / tools / unit events) plus a clickable `WAITING / ERRORS` queue
+  now fills the lower part of the stage column instead of leaving blank space below it.
 
 ## 0.5.0 — 2026-11-06
 

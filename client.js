@@ -1208,7 +1208,7 @@ window.__ModuleLoader__.load({
   background-image:radial-gradient(rgba(85,255,255,0.16) 1px, transparent 1px);
   background-size:26px 26px; opacity:.28;
 }
-.nxt-hud{position:relative; z-index:1; height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) minmax(96px,0.22fr) auto;}
+.nxt-hud{position:relative; z-index:1; height:100%; display:grid; grid-template-rows:auto minmax(0,1fr) auto;}
 .nxt-top{
   display:flex; align-items:center; gap:16px; padding:8px 14px; flex-wrap:wrap;
   padding-top:calc(8px + var(--dsh-frame-top-clearance, 0px));
@@ -1454,8 +1454,9 @@ window.__ModuleLoader__.load({
 .nxt-feed-i[data-k="sys"]{color:#55ffff}
 .nxt-feed-i[data-k="none"]{color:#555555}
 
-/* Bottom event rail: fills the previously blank strip below the stage HUD. */
-.nxt-bottom{display:flex; gap:9px; padding:0 11px 8px; min-height:0; overflow:hidden}
+/* Bottom event rail lives inside the middle stage panel, not below the body. */
+.nxt-bottom{display:flex; gap:8px; flex:none; height:clamp(96px, 19%, 150px); min-height:0; padding:6px 8px 8px;
+  overflow:hidden; border-top:1px solid rgba(85,255,255,0.10); background:rgba(0,0,0,0.36)}
 .nxt-bottom .nxt-panel{min-height:0}
 .nxt-streampanel{flex:1 1 auto; min-width:0}
 .nxt-queuepanel{flex:0 0 27%; min-width:190px}
@@ -1486,7 +1487,7 @@ window.__ModuleLoader__.load({
 .nxt-queue-row[data-state="wait"] .nxt-qstate{color:#ffff55}
 .nxt-queue-row[data-state="err"] .nxt-qstate{color:#ff5555}
 .nxt-queue-row .nxt-qname{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; color:#aaaaaa}
-.nxt-cinema .nxt-bottom{padding-left:14px; padding-right:14px}
+.nxt-cinema .nxt-bottom{padding-left:14px; padding-right:14px; height:clamp(110px, 18%, 170px)}
 
 .nxt-vig{position:absolute; inset:0; pointer-events:none; z-index:6}
 .nxt-vig{background:radial-gradient(125% 95% at 50% 42%, transparent 44%, rgba(0,0,0,.6) 100%)}
@@ -1716,20 +1717,20 @@ window.__ModuleLoader__.load({
         <div class="nxt-standby-tray" id="nxt-standby-tray" hidden></div>
         <div class="nxt-legend" id="nxt-legend"></div>
       </div>
+      <div class="nxt-bottom">
+        <div class="nxt-panel nxt-streampanel">
+          <div class="nxt-phead"><span>EVENT STREAM</span><span class="nxt-phint" id="nxt-stream-hint">PRIORITY · RECENT</span></div>
+          <div class="nxt-ev-list" id="nxt-stream-list"></div>
+        </div>
+        <div class="nxt-panel nxt-queuepanel">
+          <div class="nxt-phead"><span>WAITING / ERRORS</span><span class="nxt-phint" id="nxt-queue-hint">0</span></div>
+          <div class="nxt-queue-list" id="nxt-queue-list"></div>
+        </div>
+      </div>
     </div>
     <div class="nxt-panel nxt-railpanel">
       <div class="nxt-phead"><span>TELEMETRY</span><span class="nxt-phint">RAIL</span></div>
       <div class="nxt-rail" id="nxt-rail"></div>
-    </div>
-  </div>
-  <div class="nxt-bottom">
-    <div class="nxt-panel nxt-streampanel">
-      <div class="nxt-phead"><span>EVENT STREAM</span><span class="nxt-phint" id="nxt-stream-hint">PRIORITY · RECENT</span></div>
-      <div class="nxt-ev-list" id="nxt-stream-list"></div>
-    </div>
-    <div class="nxt-panel nxt-queuepanel">
-      <div class="nxt-phead"><span>WAITING / ERRORS</span><span class="nxt-phint" id="nxt-queue-hint">0</span></div>
-      <div class="nxt-queue-list" id="nxt-queue-list"></div>
     </div>
   </div>
   <div class="nxt-ticker" id="nxt-ticker"></div>
