@@ -1,9 +1,10 @@
 # Changelog
 
-## Unreleased
+## 0.6.1 — 2026-11-07
 
 ### Changed
 
+- Removed dead SVG chart helpers and CSS after the all-Canvas migration.
 - Renamed the sidebar/panel entry: Chinese `作战室`, English `Agent Deck` (previously `监控室 / Control Room`).
 
 ## 0.6.0 — 2026-11-07

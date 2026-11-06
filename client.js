@@ -1314,9 +1314,9 @@ window.__ModuleLoader__.load({
 .nxt-cspark-delta[data-dir="down"]{color:#ff5555}
 .nxt-cspark-graph{flex:1; height:18px; min-width:40px; overflow:hidden}
 .nxt-card-spark-canvas{width:100%; height:18px; display:block}
-.nxt-spark-svg{display:block; width:100%; height:100%}
+
 .nxt-bar{display:inline-block; width:46px; height:4px; background:rgba(85,255,255,0.14); position:relative; overflow:hidden; vertical-align:middle}
-.nxt-bar>i{display:block; height:100%; background:linear-gradient(90deg,var(--nxt-cy),var(--nxt-mg)); box-shadow:0 0 6px rgba(85,255,255,0.6)}
+
 .nxt-sec{margin-top:5px; padding-top:4px;
   display:flex; flex-direction:column; flex:1 1 0; min-height:0}
 .nxt-lbl{display:block; font-size:7px; letter-spacing:.26em; color:#55ffff; margin-bottom:2px; flex:none}
@@ -1436,9 +1436,9 @@ window.__ModuleLoader__.load({
   animation:nxt-blink 1.6s steps(2,end) infinite; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 
 /* right-rail dense widgets */
-.nxt-rail-spark{width:100%; height:30px; display:block; flex:none}
-.nxt-rail-spark polyline{fill:none; stroke:#55ffff; stroke-width:1.5}
-.nxt-rail-spark .nxt-rail-fill{fill:rgba(85,255,255,0.14); stroke:none}
+
+
+
 .nxt-unit-row{display:flex; align-items:center; gap:6px; font-size:9px; white-space:nowrap; overflow:hidden; margin-top:2px}
 .nxt-unit-row .nxt-ut{color:#ff55ff; flex:none}
 .nxt-unit-row .nxt-us{flex:none; width:28px; font-size:8px; letter-spacing:.08em}
@@ -1448,11 +1448,11 @@ window.__ModuleLoader__.load({
 .nxt-mini{display:flex; align-items:center; gap:6px; font-size:9px; white-space:nowrap; margin-top:2px}
 .nxt-mini .nxt-mn{color:#aaaaaa; flex:none; width:58px; overflow:hidden; text-overflow:ellipsis}
 .nxt-mini .nxt-mbar{flex:1; height:3px; background:rgba(85,255,255,0.14); overflow:hidden}
-.nxt-mini .nxt-mbar>i{display:block; height:100%; background:#55ffff}
-.nxt-mini .nxt-mbar>i.err{background:#ff5555}
+
+
 .nxt-mini .nxt-mv{color:#ffffff; flex:none; width:30px; text-align:right; font-variant-numeric:tabular-nums}
 .nxt-phase{display:flex; height:6px; margin-top:4px; overflow:hidden; background:rgba(85,255,255,0.08)}
-.nxt-phase>i{display:block; height:100%}
+
 .nxt-phase-legend{display:flex; justify-content:space-between; margin-top:3px; font-size:7px; color:#555555; letter-spacing:.06em}
 .nxt-phase-legend span i{display:inline-block; width:5px; height:5px; margin-right:3px}
 .nxt-sys{display:flex; justify-content:space-between; gap:8px; font-size:8px; color:#555555; letter-spacing:.06em; margin-top:2px}
@@ -1464,8 +1464,6 @@ window.__ModuleLoader__.load({
 .nxt-code-line .c{margin-left:auto; color:#555555; font-style:normal; font-size:7px; flex:none}
 .nxt-chipsinline{display:flex; gap:4px; margin-top:6px; flex-wrap:wrap}
 .nxt-chipsinline b{font-weight:600; font-size:7px; letter-spacing:.12em; color:var(--nxt-frame); padding:1px 4px; white-space:nowrap; background:rgba(255,255,85,0.08)}
-.nxt-chip .nxt-bar-wide{width:54px; height:5px; vertical-align:middle;
-  background:repeating-linear-gradient(45deg, rgba(85,85,85,0.55) 0 2px, rgba(0,0,0,0.25) 2px 4px)}
 .nxt-leader{display:flex; align-items:baseline; gap:6px; flex:1; min-width:0; overflow:hidden}
 .nxt-leader>span{flex:none; color:#555555; font-size:7px; letter-spacing:.16em}
 .nxt-leader>i{flex:1; min-width:8px; border-bottom:1px dotted rgba(255,255,85,0.26); transform:translateY(-2px)}
@@ -1642,12 +1640,11 @@ window.__ModuleLoader__.load({
 .nxt-aw-h b{color:var(--nxt-cy); font-weight:600; letter-spacing:.08em}
 .nxt-aw-body{flex:1; min-height:0; display:flex; flex-direction:column; gap:3px; overflow:hidden; justify-content:center}
 .nxt-ring-canvas{width:100%; height:112px; display:block}
-.nxt-ring-bg{fill:none; stroke:rgba(85,255,255,0.14); stroke-width:7}
-.nxt-ring-fg{fill:none; stroke:var(--nxt-cy); stroke-width:7; stroke-linecap:round; transform:rotate(-90deg); transform-origin:50% 50%;
-  filter:drop-shadow(0 0 5px rgba(85,255,255,0.75))}
-.nxt-ring-fg-hot{stroke:var(--nxt-mg); filter:drop-shadow(0 0 5px rgba(255,85,255,0.75))}
-.nxt-ring-num{fill:#ffffff; font:600 19px "JetBrains Mono",Consolas,monospace; text-anchor:middle}
-.nxt-ring-sub{fill:#55ffff; font:8px "JetBrains Mono",Consolas,monospace; text-anchor:middle; letter-spacing:.08em}
+
+
+
+
+
 .nxt-kvrow{display:flex; justify-content:space-between; gap:6px; font-size:9px; color:#aaaaaa; font-variant-numeric:tabular-nums; flex:none}
 .nxt-kvrow span{color:#55ffff; letter-spacing:.12em; font-size:8px}
 .nxt-kvrow b{color:#aaaaaa; font-weight:600}
@@ -1660,16 +1657,16 @@ window.__ModuleLoader__.load({
 .nxt-lane-name{width:34px; flex:none; font-size:7px; letter-spacing:.1em; color:#55ffff}
 .nxt-lane-track{position:relative; flex:1; height:9px; background:rgba(85,255,255,0.07); overflow:hidden}
 .nxt-lane-canvas{display:block; width:100%; height:100%}
-.nxt-lane-seg{position:absolute; top:0; bottom:0; border-radius:0; opacity:.85}
+
 .nxt-files{display:flex; flex-direction:column; gap:3px; flex:1; min-height:0; overflow:hidden; justify-content:center}
 .nxt-file{display:flex; align-items:center; gap:6px; font-size:9px; color:#aaaaaa; white-space:nowrap}
 .nxt-file .nxt-fpath{flex:1; overflow:hidden; text-overflow:ellipsis; color:#aaaaaa}
 .nxt-file .nxt-fbar{width:48px; height:4px; background:rgba(255,85,255,0.16); flex:none; overflow:hidden}
-.nxt-file .nxt-fbar>i{display:block; height:100%; background:linear-gradient(90deg,var(--nxt-mg),var(--nxt-am)); box-shadow:0 0 6px rgba(255,85,255,0.6)}
+
 .nxt-file .nxt-frw{width:38px; text-align:right; font-size:8px; color:#555555; flex:none}
 .nxt-analyze-tps-canvas{width:100%; flex:1; min-height:48px; display:block}
-.nxt-spark polyline{fill:none; stroke:var(--nxt-cy); stroke-width:1.6; filter:drop-shadow(0 0 4px rgba(85,255,255,0.8))}
-.nxt-spark .nxt-spark-fill{fill:rgba(85,255,255,0.16); stroke:none}
+
+
 .nxt-todo{display:flex; align-items:center; gap:5px; font-size:9px; color:#aaaaaa; white-space:nowrap; overflow:hidden; flex:none}
 .nxt-todo i{flex:none; font-style:normal; width:9px; text-align:center}
 .nxt-todo[data-done="1"]{color:#555555; text-decoration:line-through}
@@ -1822,22 +1819,6 @@ window.__ModuleLoader__.load({
             '<button type="button" data-legend="' + state + '" data-active="' + (active === state ? '1' : '0') + '"><i></i>' + label + '</button>',
         ).join('') +
         '<button type="button" data-legend="all" data-active="' + (active ? '0' : '1') + '">ALL</button>'
-      )
-    }
-
-    /** Inline sparkline markup (100xH viewBox, stretched by CSS). */
-    function sparkMarkup(values, color, height) {
-      const size = height || 18
-      const series = Array.isArray(values) && values.length > 1 ? values : [0, 0]
-      const peak = Math.max(1, ...series)
-      const count = series.length
-      const points = series
-        .map((value, index) => ((index / (count - 1)) * 100).toFixed(1) + ',' + (size - 2 - (value / peak) * (size - 4)).toFixed(1))
-        .join(' ')
-      return (
-        '<svg class="nxt-spark-svg" viewBox="0 0 100 ' + size + '" preserveAspectRatio="none">' +
-        '<polygon points="0,' + size + ' ' + points + ' 100,' + size + '" fill="' + color + '" fill-opacity="0.14"/>' +
-        '<polyline points="' + points + '" fill="none" stroke="' + color + '" stroke-width="1.3"/></svg>'
       )
     }
 
@@ -2266,20 +2247,6 @@ window.__ModuleLoader__.load({
           })
           .join('') || '<div class="nxt-shud-line"><span class="nm">no calls in window</span></div>')
       return { tl, tr: '', bl, br }
-    }
-
-    function ratioSpark(history) {
-      const values = Array.isArray(history) && history.length > 1 ? history : [0, 0]
-      const peak = Math.max(1, ...values)
-      const count = values.length
-      const points = values
-        .map((value, index) => ((index / (count - 1)) * 100).toFixed(1) + ',' + (28 - (value / peak) * 24).toFixed(1))
-        .join(' ')
-      return (
-        '<svg class="nxt-rail-spark" viewBox="0 0 100 30" preserveAspectRatio="none">' +
-        '<polygon class="nxt-rail-fill" points="0,30 ' + points + ' 100,30"/>' +
-        '<polyline points="' + points + '"/></svg>'
-      )
     }
 
     function railBlock(title, hint, body) {
