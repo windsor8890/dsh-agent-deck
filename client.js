@@ -3850,6 +3850,9 @@ window.__ModuleLoader__.load({
 
         // shallow isometric (2.5D): rows run horizontally, depth recedes up-right
         const pitchX = 3.0
+        // Nudge the eight workstations left so the right-side supervisor podium
+        // keeps a clear walkway instead of sitting on top of the last column.
+        const DESK_SHIFT_X = -1.2
         const pitchY = 3.4
         const deskW = 1.7
         const deskD = 1.15
@@ -4271,7 +4274,7 @@ window.__ModuleLoader__.load({
         for (let slot = 0; slot < TOTAL_DESKS; slot++) {
           const row = Math.floor(slot / DESK_COLS)
           const col = slot % DESK_COLS
-          const wx = col * pitchX + deskW * 0.9
+          const wx = col * pitchX + deskW * 0.9 + DESK_SHIFT_X
           const wy = row * pitchY + deskD + 0.06
           spotBySlot.push({
             slot,
@@ -4455,7 +4458,7 @@ window.__ModuleLoader__.load({
         for (let slot = 0; slot < TOTAL_DESKS; slot++) {
           const row = Math.floor(slot / DESK_COLS)
           const col = slot % DESK_COLS
-          desks.push({ slot, x: col * pitchX, y: row * pitchY, agent: slotAgent.get(slot) || null })
+          desks.push({ slot, x: col * pitchX + DESK_SHIFT_X, y: row * pitchY, agent: slotAgent.get(slot) || null })
         }
         desks.sort((a, b) => a.y - b.y || a.x - b.x)
         hitAreas = []
@@ -4523,9 +4526,9 @@ window.__ModuleLoader__.load({
         const drawSupervisorStation = () => {
           // A teacher-style podium on the right side, between the two desk rows:
           // it stays out of the center aisle and does not take a numbered seat.
-          const x = 10.85
+          const x = 11.55
           const y = 1.45
-          const w = 1.9
+          const w = 1.85
           const d = 1.0
           const z = 0.6
           const gold = '#ffff55'

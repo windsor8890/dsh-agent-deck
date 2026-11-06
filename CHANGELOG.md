@@ -27,6 +27,8 @@
 - Added a decorative `CHIEF DESK / SUPERVISOR` teacher-style podium on the right side,
   between the two desk rows; a fixed gold-tinted resident supervisor occupies it. It is
   not one of the 8 agent seats and does not consume a session slot.
+- Shifted the 8 agent desks slightly left and moved the podium further right, leaving a
+  clear walkway and visual gap between the last desk column and the supervisor.
 - Compact stage HUD: only the essential aggregate rows, a shorter sparkline and fewer
   unit/tool/call rows, leaving more room for the office floor.
 - Agent cards grow to fill the strip when there are one or two units; a single unit uses
