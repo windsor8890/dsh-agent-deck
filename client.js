@@ -1716,7 +1716,10 @@ window.__ModuleLoader__.load({
 .nxt-aw-h{display:flex; align-items:center; justify-content:space-between; font-size:8px; letter-spacing:.2em; color:#55ffff; text-transform:uppercase; flex:none}
 .nxt-aw-h b{color:var(--nxt-cy); font-weight:600; letter-spacing:.08em}
 .nxt-aw-body{flex:1; min-height:0; display:flex; flex-direction:column; gap:3px; overflow:hidden; justify-content:center}
-.nxt-ring-canvas{width:100%; height:112px; display:block}
+/* the ring sizes itself to the body: a fixed 112px canvas plus the kv rows used to
+   overflow a short card, and the centered overflow clipped the top/bottom of the
+   ring instead of scaling it */
+.nxt-ring-canvas{width:100%; flex:1 1 0; min-height:0; max-height:112px; display:block}
 
 
 

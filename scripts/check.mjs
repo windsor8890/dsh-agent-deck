@@ -207,6 +207,19 @@ check('no test/debug leftovers in production client', () => {
   return 'clean'
 })
 
+// ---------------------------------------------------------------- analyze layout
+check('analyze ring canvas scales instead of clipping', () => {
+  // A fixed-height canvas plus the kv rows overflowed short ANALYZE cards, and the
+  // centered overflow clipped the ring at the top and bottom. The canvas must flex.
+  const rule = /\.nxt-ring-canvas\{([^}]*)\}/.exec(client)
+  assert(rule, '.nxt-ring-canvas rule is missing')
+  const css = rule[1]
+  assert(/flex:\s*1\s+1\s+0/.test(css), 'ring canvas must flex to the body height')
+  assert(!/(^|;)\s*height:\s*\d+px/.test(css), 'ring canvas must not pin a fixed height')
+  assert(/max-height:\s*112px/.test(css), 'ring canvas must keep its 112px cap')
+  return css.trim()
+})
+
 // ---------------------------------------------------------------- size budget
 const clientBytes = Buffer.byteLength(client, 'utf8')
 const gzipBytes = zlib.gzipSync(Buffer.from(client), { level: 9 }).length
