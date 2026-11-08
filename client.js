@@ -4188,15 +4188,6 @@ window.__ModuleLoader__.load({
         context.moveTo(baseA.x, baseA.y)
         context.lineTo(baseB.x, baseB.y)
         context.stroke()
-        // signage
-        const signAnchor = iso(minX + 0.5, minY, wallH - 0.3)
-        context.save()
-        context.textAlign = 'left'
-        context.textBaseline = 'alphabetic'
-        context.fillStyle = 'rgba(85,255,255,0.95)'
-        context.font = '600 ' + Math.max(10, Math.round(s * 0.2)) + 'px "JetBrains Mono", ui-monospace, monospace'
-        context.fillText('AGENT DECK // FLOOR 07', signAnchor.x, signAnchor.y)
-        context.restore()
 
         // Three separately mounted wall displays share one baseline:
         // SECTOR 07 (live status), THROUGHPUT, TOOL LOAD. No shared backboard.

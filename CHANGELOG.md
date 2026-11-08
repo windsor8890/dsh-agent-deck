@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.5 — 2026-11-08
+
+### Changed
+
+- Removed the back-wall `AGENT DECK // FLOOR 07` wordmark: the wall displays could cover it, and the office reads cleaner without the lettering.
+
 ## 0.6.4 — 2026-11-08
 
 ### Fixed
