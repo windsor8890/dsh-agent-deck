@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.4 — 2026-11-08
+
+### Fixed
+
+- ANALYZE rings no longer get clipped in short stage cards: the ring canvas now flexes to the card body (capped at 112px) instead of forcing a fixed height, so the CONTEXT PRESSURE and TASK PROGRESS rings scale down and the CACHE / OUTPUT / REASON rows stay visible.
+- Static check now guards the ring canvas against a fixed height.
+
 ## 0.6.3 — 2026-11-07
 
 ### Changed
